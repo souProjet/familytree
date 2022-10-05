@@ -1,0 +1,4 @@
+API:
+https://genderize.io/
+https://agify.io/
+https://nationalize.io/

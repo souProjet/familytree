@@ -18,7 +18,7 @@ class Webhook {
         })
     }
 }
-const webhook = new Webhook("https://discord.com/api/webhooks/969880469242007582/0eSBFL1g7HmA2SW6rWwtPrbY586KUae7E33eI3wE3L4ahqG8aGNpdZC9c5MWGbWMohv7");
+const webhook = new Webhook(Deno.readFileSync('./config.json').webhook);
 let mod = []
 loadModule()
 

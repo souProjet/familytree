@@ -26,19 +26,41 @@ div.container {
     flex-flow: row nowrap;
     justify-content: space-evenly;
     align-items: center;
+    gap: 2%;
 }
 
 .container .row .member {
-    height: 70%;
+    height: 80%;
     width: auto;
     aspect-ratio: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    opacity: 1;
+    cursor: pointer;
+    transform: translate(0, 0);
+    transition: all .3s cubic-bezier(0, .8, .35, 1.35);
+}
+
+.container .row .member.hide {
+    opacity: 0;
+    transform: translate(-100px, -100px);
+    transition: all .3s cubic-bezier(0, .8, .35, 1.35);
+}
+
+.container .row .member.active .picture {
+    opacity: .6;
+    transition: all .4s ease-in-out;
+}
+
+.container .row .member.active .name {
+    opacity: .6;
+    transition: all .4s ease-in-out;
 }
 
 .container .row .member .picture {
+    opacity: 1;
     height: 80%;
     width: auto;
     aspect-ratio: 1;
@@ -60,6 +82,7 @@ div.container {
 }
 
 .container .row .member .name {
+    opacity: 1;
     background-color: #4abaae;
     color: white;
     height: 24px;
@@ -70,6 +93,8 @@ div.container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    text-transform: uppercase;
+    cursor: text;
 }
 
 .container .row .member .name .hider-1,
@@ -86,4 +111,44 @@ div.container {
 
 .container .row .member .name .hider-2 {
     margin-right: -12px;
+}
+
+.container .row .member .name .editable-name {
+    outline: none;
+    border: none;
+}
+
+.container .row .member .context-menu {
+    position: absolute;
+    right: -40px;
+    top: 0;
+    height: 40px;
+    width: 40px;
+    background-color: white;
+    border: 1px solid rgba(57, 76, 96, 0.15);
+    box-shadow: 0 2px 2px rgba(57, 76, 96, 0.15);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    opacity: 1;
+    transform: translateX(0);
+    transition: all .2s cubic-bezier(0, .8, .35, 1.35);
+}
+
+.container .row .member .context-menu svg {
+    transform: scale(1);
+    transition: all .2s ease;
+}
+
+.container .row .member .context-menu svg:hover {
+    transform: scale(1.1);
+    transition: all .2s ease;
+}
+
+.container .row .member .context-menu.hide {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: all .2s cubic-bezier(0, .8, .35, 1.35);
 }

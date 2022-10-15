@@ -1,2 +1,2 @@
+utils = new Utils();
 member = new Member();
-console.log(member.test())

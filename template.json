@@ -4,7 +4,7 @@
     "lastname": "dupont",
     "birthday": "22/08/1997",
     "children": ["DA12", "1J2K", "B20V"],
-    "with": ["8DFS"],
+    "with": "8DFS",
     "picture": false,
     "gender": "M",
     "nationality": "FR"

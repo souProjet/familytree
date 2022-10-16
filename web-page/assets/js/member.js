@@ -2,7 +2,7 @@ class Member {
     constructor() {
         this.family = [];
     }
-    createMember(parentsID) {
+    createMember(isPartner = null, parentsID) {
         return new Promise(async resolve => {
             let memberID = utils.createID();
 
@@ -37,7 +37,7 @@ class Member {
                 "nationality": null
             }
             this.family.push(newMember);
-            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID))
+            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner)
             if (createHTMLmemberReturn.completed) {
                 resolve({
                     completed: true,
@@ -52,7 +52,7 @@ class Member {
             }
         });
     }
-    createHTMLmember(member) {
+    createHTMLmember(member, isPartner) {
         return new Promise(async resolve => {
             try {
                 let row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
@@ -62,7 +62,23 @@ class Member {
                     document.querySelector('.container').appendChild(rowDiv);
                 }
                 row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
-                row.innerHTML += `
+                if (isPartner) {
+                    let memberDiv = document.createElement('div');
+                    memberDiv.classList.add('member');
+                    memberDiv.classList.add('hide');
+                    memberDiv.id = "m-" + member.id;
+                    memberDiv.innerHTML = `
+                    <div class="picture" onclick="memberClicked(event, this.parentNode);">
+                        <img src="./assets/images/defaultPicture.png" alt="Picture">
+                    </div>
+                    <p class="name">
+                        <span class="hider-1"></span>
+                        <span class="editable-name" contenteditable="true">Prénom</span>
+                        <span class="hider-2"></span>
+                    </p>`;
+                    document.querySelector('#m-' + isPartner).insertAdjacentElement('afterend', memberDiv)
+                } else {
+                    row.innerHTML += `
                     <div class="member hide" id="m-${member.id}">
                         <div class="picture" onclick="memberClicked(event, this.parentNode);">
                             <img src="./assets/images/defaultPicture.png" alt="Picture">
@@ -70,7 +86,12 @@ class Member {
                         <p class="name"><span class="hider-1"></span><span class="editable-name" contenteditable="true">Prénom</span><span class="hider-2"></span></p>
                     </div>
                 `;
-                setTimeout(() => { row.querySelector('.member.hide').classList.remove('hide') }, 10);
+                }
+                setTimeout(() => {
+                    //row.querySelector('.member.hide').style.order = row.querySelectorAll('.member').length;
+                    row.querySelector('.member.hide').classList.remove('hide')
+                }, 10);
+                reComputePartnerLink();
             } catch (err) {
                 resolve({
                     completed: false,
@@ -135,6 +156,30 @@ class Member {
                 if (this.family.find(member => member.id == id) && this.family.find(member => member.id == idPartner)) {
                     this.family.find(member => member.id == id).with = idPartner;
                     this.family.find(member => member.id == idPartner).with = id;
+                    resolve({
+                        completed: true,
+                        family: this.family
+                    })
+                } else {
+                    resolve({
+                        completed: false,
+                        error: `[${!this.family.find(member => member.id == id) ? id : idPartner}] : Ceci n'est pas un ID valide`
+                    })
+                }
+            } else {
+                resolve({
+                    completed: false,
+                    error: `[${!id.match(/([A-Z0-9]{6})/g) ? id : idPartner}] : Membre non trouvé`
+                })
+
+            }
+        });
+    }
+    removePartner(id, idPartner) {
+        return new Promise(async resolve => {
+            if (id.match(/([A-Z0-9]{6})/g) && idPartner.match(/([A-Z0-9]{6})/g)) {
+                if (this.family.find(member => member.id == id) && this.family.find(member => member.id == idPartner)) {
+                    this.family.find(member => member.id == id).with = null;
                     resolve({
                         completed: true,
                         family: this.family

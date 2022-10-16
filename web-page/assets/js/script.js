@@ -23,7 +23,7 @@ async function memberClicked(e, memberHTML) {
     removeMemberFocusElements();
     let memberJSON = await member.getMember(memberHTML.id.split('-')[1]);
     memberHTML.innerHTML += `
-        <div class="context-menu hide" >
+        <div class="context-menu hide">
             <svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
                 <g fill="red">
                     <path d="M336.559,68.611L231.016,174.165l105.543,105.549c15.699,15.705,15.699,41.145,0,56.85
@@ -91,9 +91,18 @@ async function memberClicked(e, memberHTML) {
 
 async function removeMember(memberHTML) {
     memberHTML.classList.add('hide');
+    let memberHTMLId = memberHTML.id.split('-')[1];
+    let memberJSON = await member.getMember(memberHTMLId);
+    if(memberJSON.member.with){
+        let removePartnerReturn = await member.removePartner(memberJSON.member.with, memberHTMLId);
+        if(removePartnerReturn.completed){
+            (document.querySelector('#l-'+memberHTMLId+'-'+memberJSON.member.with) || document.querySelector('#l-'+memberJSON.member.with+'-'+memberHTMLId)).remove();
+        }
+    }
     setTimeout(async() => {
-        await member.removeMember(memberHTML.id.split('-')[1]);
+        await member.removeMember(memberHTMLId);
         memberHTML.remove();
+        reComputePartnerLink();
     }, 40);
 }
 
@@ -101,14 +110,23 @@ document.querySelector('.container').addEventListener('click', () => { removeMem
 
 async function addPartner(memberHTML){
     let memberHTMLId = memberHTML.id.split('-')[1];
-    let createMemberReturn = await member.createMember();
+    let createMemberReturn = await member.createMember(memberHTMLId);
     if(createMemberReturn.completed){
         let addPartnerReturn = await member.addPartner(memberHTMLId, createMemberReturn.newmember.id);
         if(addPartnerReturn.completed){
+            
+          
             let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
             let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
-    
-            document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`<span class="partner-link" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="width:${boundingRectB.left - boundingRectA.left}px;"><span>`;
+
+            document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`<span class="partner-link hide" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;"><span>`;
+            setTimeout(() => {
+                let partnerLink = document.querySelector('.partner-link.hide');
+                partnerLink.classList.remove('hide')
+                setTimeout(() => {
+                    partnerLink.style.transition= "none";
+                }, 200);
+            }, 10);
         }
     }
 }
@@ -119,10 +137,9 @@ function reComputePartnerLink(){
         let parnerId = link.id.split("-")[2];
         let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
         let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
-        link.style.width = (boundingRectB.left - boundingRectA.left)+ "px"
+        link.style.width = (boundingRectB.x - boundingRectA.x)+ "px";
+        link.style.left = boundingRectA.left+boundingRectA.width/2 +"px";
     }); 
 }
 
 window.addEventListener('resize', reComputePartnerLink);
-
-member.createMember();

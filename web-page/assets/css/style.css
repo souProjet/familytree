@@ -176,4 +176,12 @@ div.container {
     background-color: #bde582;
     height: 13px;
     z-index: 5;
+    opacity: 1;
+    transition: all .2s cubic-bezier(.76, .46, .62, 1.13);
+}
+
+.container .row .partner-link.hide {
+    opacity: 0;
+    width: 0 !important;
+    transition: all .2s cubic-bezier(.76, .46, .62, 1.13);
 }

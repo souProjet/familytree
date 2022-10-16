@@ -21,7 +21,7 @@ async function memberClicked(e, memberHTML) {
     e.preventDefault();
     e.stopPropagation();
     removeMemberFocusElements();
-    let memberJSON = await member.getMember(memberHTML.id);
+    let memberJSON = await member.getMember(memberHTML.id.split('-')[1]);
     memberHTML.innerHTML += `
         <div class="context-menu hide" >
             <svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
@@ -84,7 +84,7 @@ async function memberClicked(e, memberHTML) {
     memberHTML.classList.add('active');
     setTimeout(() => {
         memberHTML.querySelector('.context-menu').classList.remove('hide')
-        memberHTML.querySelector('.add-partner') ? memberHTML.querySelector('.add-partner').classList.remove('hide') : NULL
+        memberHTML.querySelector('.add-partner') ? memberHTML.querySelector('.add-partner').classList.remove('hide') : null;
         memberHTML.querySelector('.add-child').classList.remove('hide');
     }, 10)
 }
@@ -92,7 +92,7 @@ async function memberClicked(e, memberHTML) {
 async function removeMember(memberHTML) {
     memberHTML.classList.add('hide');
     setTimeout(async() => {
-        await member.removeMember(memberHTML.id);
+        await member.removeMember(memberHTML.id.split('-')[1]);
         memberHTML.remove();
     }, 40);
 }
@@ -100,29 +100,29 @@ async function removeMember(memberHTML) {
 document.querySelector('.container').addEventListener('click', () => { removeMemberFocusElements() });
 
 async function addPartner(memberHTML){
-    let memberHTMLId = memberHTML.id;
+    let memberHTMLId = memberHTML.id.split('-')[1];
     let createMemberReturn = await member.createMember();
     if(createMemberReturn.completed){
         let addPartnerReturn = await member.addPartner(memberHTMLId, createMemberReturn.newmember.id);
         if(addPartnerReturn.completed){
-            let boundingRectA = document.querySelector('#'+memberHTMLId).getBoundingClientRect();
-            let boundingRectB = document.querySelector('#'+createMemberReturn.newmember.id).getBoundingClientRect();
+            let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
+            let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
     
-            document.querySelector('#'+memberHTMLId).parentNode.innerHTML+=`<span class="partner-link" id="${memberHTMLId}-${createMemberReturn.newmember.id}" style="background-color:#bde582; height:13px; width:${(boundingRectB.left - boundingRectA.left) - (boundingRectA.width/4) - 20}px; position:absolute;"><span>`;
+            document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`<span class="partner-link" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="width:${boundingRectB.left - boundingRectA.left}px;"><span>`;
         }
     }
 }
 
 function reComputePartnerLink(){
     document.querySelectorAll('.partner-link').forEach(link => {
-        console.log(link)
-        let id = link.id.split("-")[0];
-        let parnerId = link.id.split("-")[1];
-        let boundingRectA = document.querySelector('#'+id).getBoundingClientRect();
-        let boundingRectB = document.querySelector('#'+parnerId).getBoundingClientRect();
-        console.log(boundingRectA)
-        link.style.width = ((boundingRectB.left - boundingRectA.left) - (boundingRectA.width/4) - 20 )+ "px"
+        let id = link.id.split("-")[1];
+        let parnerId = link.id.split("-")[2];
+        let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
+        let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
+        link.style.width = (boundingRectB.left - boundingRectA.left)+ "px"
     }); 
 }
+
+window.addEventListener('resize', reComputePartnerLink);
 
 member.createMember();

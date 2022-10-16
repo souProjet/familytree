@@ -42,22 +42,13 @@ div.container {
     cursor: pointer;
     transform: translate(0, 0);
     transition: all .3s cubic-bezier(0, .8, .35, 1.35);
+    z-index: 10;
 }
 
 .container .row .member.hide {
     opacity: 0;
     transform: translate(-100px, -100px);
     transition: all .3s cubic-bezier(0, .8, .35, 1.35);
-}
-
-.container .row .member.active .picture {
-    opacity: .6;
-    transition: all .4s ease-in-out;
-}
-
-.container .row .member.active .name {
-    opacity: .6;
-    transition: all .4s ease-in-out;
 }
 
 .container .row .member .picture {
@@ -178,4 +169,11 @@ div.container {
     transform: translate(-50%, 0) scale(1);
     bottom: -20px;
     transition: all .2s ease;
+}
+
+.container .row .partner-link {
+    position: absolute;
+    background-color: #bde582;
+    height: 13px;
+    z-index: 5;
 }

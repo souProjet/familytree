@@ -63,7 +63,7 @@ class Member {
                 }
                 row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
                 row.innerHTML += `
-                    <div class="member hide" id="${member.id}">
+                    <div class="member hide" id="m-${member.id}">
                         <div class="picture" onclick="memberClicked(event, this.parentNode);">
                             <img src="./assets/images/defaultPicture.png" alt="Picture">
                         </div>

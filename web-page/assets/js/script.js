@@ -1,19 +1,32 @@
 utils = new Utils();
 member = new Member();
 
-function removeMemberFocusElements() {
+let partnerFocused;
+
+async function removeMemberFocusElements() {
     let memberActive = document.querySelector('.member.active');
+
     if (memberActive) {
         memberActive.querySelector('.context-menu').classList.add('hide');
         memberActive.querySelector('.add-partner') ? memberActive.querySelector('.add-partner').classList.add('hide') : null;
-        memberActive.querySelector('.add-child').classList.add('hide');
+        memberActive.querySelector('.add-child') ? memberActive.querySelector('.add-child').classList.add('hide') : null;
 
+        let memberJSON = await member.getMember(memberActive.id.split('-')[1]);
+        let partnerLink = null;
+        if (memberJSON.member.with && memberActive.id.split('-')[1] !== partnerFocused) {
+            partnerLinkHtml = (document.querySelector('#l-' + memberActive.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberActive.id.split('-')[1]))
+            partnerLinkHtml ? partnerLinkHtml.style.backgroundColor = "#bde582" : null;
+            partnerLinkHtml ? partnerLinkHtml.querySelector('.add-child').classList.add('hide') : null;
+        }
         setTimeout(() => {
             memberActive.classList.remove('active');
             memberActive.querySelector('.context-menu').remove();
             memberActive.querySelector('.add-partner') ? memberActive.querySelector('.add-partner').remove() : null;
-            memberActive.querySelector('.add-child').remove();
-
+            memberActive.querySelector('.add-child') ? memberActive.querySelector('.add-child').remove() : null;
+            memberActive.querySelector('.picture').style.border = "solid 10px #bde582";
+            if (memberJSON.member.with && memberActive.id.split('-')[1] !== partnerFocused) {
+                partnerLinkHtml ? partnerLinkHtml.querySelector('.add-child').remove() : null;
+            }
         }, 20);
     }
 }
@@ -22,6 +35,11 @@ async function memberClicked(e, memberHTML) {
     e.stopPropagation();
     removeMemberFocusElements();
     let memberJSON = await member.getMember(memberHTML.id.split('-')[1]);
+    memberHTML.querySelector('.picture').style.border = "solid 10px #79a932";
+    if (memberJSON.member.with) {
+        partnerFocused = memberJSON.member.with;
+        (document.querySelector('#l-' + memberHTML.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberHTML.id.split('-')[1])).style.backgroundColor = "#79a932";
+    }
     memberHTML.innerHTML += `
         <div class="context-menu hide">
             <svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
@@ -47,7 +65,7 @@ async function memberClicked(e, memberHTML) {
             </g>
             </svg>
         </div>
-        ${!memberJSON.member.with ? `
+        ${!memberJSON.member.with ?`
         <svg onclick="addPartner(this.parentNode)" width="25px" height="25px" class="add-partner hide" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 611.997 611.997" style="enable-background:new 0 0 611.997 611.997;" xml:space="preserve">
             <g fill="rgba(255, 23, 39, .9)">
                 <g>
@@ -64,7 +82,7 @@ async function memberClicked(e, memberHTML) {
                         c-1.033-5.002-1.577-10.181-1.577-15.482v-12.432H383.77z"/>
                 </g>
             </g>
-        </svg>`:``}
+        </svg>
 
         <svg class="add-child hide" width="30px" height="30px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 328.5 328.5" style="enable-background:new 0 0 328.5 328.5;" xml:space="preserve">
             <g fill="#2682ff">
@@ -79,13 +97,34 @@ async function memberClicked(e, memberHTML) {
                         c-31.796,0-57.663-25.868-57.663-57.663S170.825,48.515,202.621,48.515z"/>
                 </g>
             </g>
-        </svg>
+        </svg>`:``}
         `;
+
+    let partnerLinkHtml = undefined;
+    if(memberJSON.member.with){
+        partnerLinkHtml = (document.querySelector('#l-' + memberHTML.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberHTML.id.split('-')[1]))
+        partnerLinkHtml.innerHTML+=`
+        <svg class="add-child hide" width="35px" height="35px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 328.5 328.5" style="enable-background:new 0 0 328.5 328.5;" xml:space="preserve">
+            <g fill="#2682ff">
+                <g>
+                    <polygon points="96.333,150.918 96.333,135.918 55.667,135.918 55.667,95.251 40.667,95.251 40.667,135.918 0,135.918 0,150.918 
+                        40.667,150.918 40.667,191.583 55.667,191.583 55.667,150.918 		"/>
+                    <path d="M259.383,185.941H145.858c-38.111,0-69.117,31.006-69.117,69.117v39.928H328.5v-39.928
+                        C328.5,216.948,297.494,185.941,259.383,185.941z M313.5,279.987H91.741v-24.928c0-29.84,24.276-54.117,54.117-54.117h113.524
+                        c29.84,0,54.117,24.277,54.117,54.117L313.5,279.987L313.5,279.987z"/>
+                    <path d="M202.621,178.84c40.066,0,72.662-32.597,72.662-72.663s-32.596-72.663-72.662-72.663s-72.663,32.596-72.663,72.663
+                        S162.555,178.84,202.621,178.84z M202.621,48.515c31.795,0,57.662,25.867,57.662,57.663s-25.867,57.663-57.662,57.663
+                        c-31.796,0-57.663-25.868-57.663-57.663S170.825,48.515,202.621,48.515z"/>
+                </g>
+            </g>
+        </svg>`;
+    }
     memberHTML.classList.add('active');
     setTimeout(() => {
         memberHTML.querySelector('.context-menu').classList.remove('hide')
         memberHTML.querySelector('.add-partner') ? memberHTML.querySelector('.add-partner').classList.remove('hide') : null;
-        memberHTML.querySelector('.add-child').classList.remove('hide');
+        memberHTML.querySelector('.add-child') ? memberHTML.querySelector('.add-child').classList.remove('hide') : null;
+        partnerLinkHtml ? partnerLinkHtml.querySelector('.add-child').classList.remove('hide') : null;
     }, 10)
 }
 

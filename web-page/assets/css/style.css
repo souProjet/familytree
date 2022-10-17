@@ -70,6 +70,7 @@ div.container {
     width: auto;
     aspect-ratio: 1;
     object-fit: contain;
+    border-radius: 50%;
 }
 
 .container .row .member .name {
@@ -146,7 +147,9 @@ div.container {
     transition: all .2s cubic-bezier(0, .8, .35, 1.35);
 }
 
-.container .row .member .add-child.hide {
+.container .row .member .add-child.hide,
+.container .row .partner-link .add-child.hide {
+    opacity: 0;
     transform: translate(-50%, -50px) !important;
 }
 
@@ -157,17 +160,25 @@ div.container {
     filter: drop-shadow( 2px 2px 3px rgba(0, 0, 0, 0.4));
 }
 
-.container .row .member .add-child:hover {
+.container .row .member .add-child:hover,
+.container .row .partner-link .add-child:hover {
     transform: translate(-50%, 0) scale(1.1);
     transition: all .2s ease;
 }
 
-.container .row .member .add-child {
+.container .row .member .add-child,
+.container .row .partner-link .add-child {
+    opacity: 1;
     position: absolute;
     left: 50%;
     transform: translate(-50%, 0) scale(1);
     bottom: -20px;
     transition: all .2s ease;
+}
+
+.container .row .partner-link .add-child {
+    bottom: -55px !important;
+    cursor: pointer;
 }
 
 .container .row .partner-link {

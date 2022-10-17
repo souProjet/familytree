@@ -67,7 +67,7 @@ class Member {
                                 memberDiv.classList.add('member');
                                 memberDiv.classList.add('hide');
                                 memberDiv.id = "m-" + member.id;
-                                let gender = document.querySelector('#m-' + isPartner).querySelector('img').src.indexOf('male') == -1 ? `male` : `female`;
+                                let gender = document.querySelector('#m-' + isPartner).querySelector('img').src.indexOf('female') != -1 ? `male` : `female`;
                                 let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
                                 memberDiv.innerHTML = `
                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
@@ -93,7 +93,6 @@ class Member {
                 `;
                 }
                 setTimeout(() => {
-                    //row.querySelector('.member.hide').style.order = row.querySelectorAll('.member').length;
                     row.querySelector('.member.hide').classList.remove('hide')
                 }, 10);
                 reComputePartnerLink();

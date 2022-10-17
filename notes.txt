@@ -2,3 +2,4 @@ API:
 https://genderize.io/
 https://agify.io/
 https://nationalize.io/
+https://randomuser.me/api/?gender=male&nat=fr&inc=name

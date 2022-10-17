@@ -66,10 +66,9 @@ div.container {
 }
 
 .container .row .member .picture img {
-    height: 75%;
+    height: 100%;
     width: auto;
     aspect-ratio: 1;
-    margin-top: -15px;
     object-fit: contain;
 }
 
@@ -177,6 +176,10 @@ div.container {
     height: 13px;
     z-index: 5;
     opacity: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
     transition: all .2s cubic-bezier(.76, .46, .62, 1.13);
 }
 

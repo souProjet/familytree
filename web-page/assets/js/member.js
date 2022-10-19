@@ -27,6 +27,19 @@ class Member {
                     }
                 });
             }
+            let depth = 0;
+            if (isPartner) {
+                depth = this.family.find(p => p.id == isPartner).depth;
+            } else {
+                let acc = memberID
+                while (this.family.find(m => m.children.indexOf(acc) != -1)) {
+                    depth++;
+                    acc = this.family.find(m => m.children.indexOf(acc) != -1).id;
+                    if (depth > 500) {
+                        break;
+                    }
+                }
+            }
             let newMember = {
                 "id": memberID,
                 "firstname": null,
@@ -36,10 +49,12 @@ class Member {
                 "with": null,
                 "picture": false,
                 "gender": null,
-                "nationality": null
+                "nationality": null,
+                "depth": depth
             }
             this.family.push(newMember);
-            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner)
+
+            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner, newMember.depth)
             if (createHTMLmemberReturn.completed) {
                 resolve({
                     completed: true,
@@ -54,20 +69,22 @@ class Member {
             }
         });
     }
-    createHTMLmember(member, isPartner) {
+    createHTMLmember(member, isPartner, depth) {
         return new Promise(async resolve => {
             try {
-                let row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
-                if (!row) {
+                if (!document.querySelectorAll('.row')[depth]) {
                     let rowDiv = document.createElement('div');
                     rowDiv.classList.add('row')
                     document.querySelector('.container').appendChild(rowDiv);
                 }
-                row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
+                let row = document.querySelectorAll('.row')[depth];
                 if (isPartner) {
                     let memberDiv = document.createElement('div');
                     memberDiv.classList.add('member');
                     memberDiv.classList.add('hide');
+                    if (depth) {
+                        memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
+                    }
                     memberDiv.id = "m-" + member.id;
                     let gender = document.querySelector('#m-' + isPartner).querySelector('img').src.indexOf('female') != -1 ? `male` : `female`;
                     let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
@@ -83,8 +100,9 @@ class Member {
                     document.querySelector('#m-' + isPartner).insertAdjacentElement('afterend', memberDiv)
                 } else {
                     let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                    let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
                     row.innerHTML += `
-                        <div class="member hide" id="m-${member.id}">
+                        <div class="member hide" id="m-${member.id}" ${height}>
                             <div class="picture" onclick="memberClicked(event, this.parentNode);">
                                 <img src="./assets/images/maleDefault.png" alt="Picture">
                             </div>
@@ -95,9 +113,11 @@ class Member {
                         </div>`;
                 }
                 setTimeout(() => {
-                    row.querySelector('.member.hide').classList.remove('hide')
-                }, 10);
-                reComputePartnerLink();
+                    row.querySelector('.member.hide').classList.remove('hide');
+                    setTimeout(() => {
+                        reComputeLink();
+                    }, 100);
+                }, 30);
             } catch (err) {
                 resolve({
                     completed: false,

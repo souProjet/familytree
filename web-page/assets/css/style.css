@@ -41,14 +41,14 @@ div.container {
     opacity: 1;
     cursor: pointer;
     transform: translate(0, 0);
-    transition: all .3s cubic-bezier(0, .8, .35, 1.35);
+    transition: all .2s cubic-bezier(0, .8, .35, 1.35);
     z-index: 10;
 }
 
 .container .row .member.hide {
     opacity: 0;
     transform: translate(-100px, -100px);
-    transition: all .3s cubic-bezier(0, .8, .35, 1.35);
+    transition: all .2s cubic-bezier(0, .8, .35, 1.35);
 }
 
 .container .row .member .picture {
@@ -112,6 +112,7 @@ div.container {
 
 .container .row .member .context-menu {
     position: absolute;
+    z-index: 15;
     right: -40px;
     top: 0;
     width: 40px;
@@ -154,6 +155,7 @@ div.container {
 }
 
 .container .row .member .add-partner {
+    z-index: 15;
     position: absolute;
     right: -25px;
     top: 60%;
@@ -177,6 +179,7 @@ div.container {
 }
 
 .container .row .partner-link .add-child {
+    z-index: 15;
     bottom: -55px !important;
     cursor: pointer;
 }

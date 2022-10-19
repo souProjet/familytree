@@ -138,10 +138,12 @@ async function removeMember(memberHTML) {
             (document.querySelector('#l-'+memberHTMLId+'-'+memberJSON.member.with) || document.querySelector('#l-'+memberJSON.member.with+'-'+memberHTMLId)).remove();
         }
     }
+    document.querySelector('[id^="l-'+memberHTMLId+'"]') ? document.querySelector('[id^="l-'+memberHTMLId+'"]').remove() : null;
+
     setTimeout(async() => {
         await member.removeMember(memberHTMLId);
         memberHTML.remove();
-        reComputePartnerLink();
+        reComputeLink();
     }, 40);
 }
 
@@ -154,7 +156,6 @@ async function addPartner(memberHTML){
         let addPartnerReturn = await member.addPartner(memberHTMLId, createMemberReturn.newmember.id);
         if(addPartnerReturn.completed){
             
-          
             let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
             let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
 
@@ -192,26 +193,48 @@ async function addChild(memberHTML){
     if(memberJSON.completed){
         let createMemberReturn = await member.createMember(false, [memberJSON.member.id, memberJSON.member.with ? memberJSON.member.with : null]);
         if(createMemberReturn.completed){
-        //si c'est le premier ajouter un trait vertical
-        let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
-        let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
-        let top = boundingRectA.top+boundingRectA.height/2;
-        let height = boundingRectB.top-10;
-        document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
-                <span class="partner-link vertical hide" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" style="height:${height}px;top:${top}px;"><span>`;
-            setTimeout(() => {
-                let partnerLink = document.querySelector('.partner-link.hide');
-                partnerLink.classList.remove('hide')
-                setTimeout(() => {
-                    partnerLink.style.transition= "none";
-                }, 200);
-            }, 10);
-
+            let childElement = document.querySelector('#m-'+createMemberReturn.newmember.id);
+            let parentElement = document.querySelector('#m-'+memberHTMLId)
+            let boundingRectA = parentElement.getBoundingClientRect();
+            let boundingRectB = childElement.getBoundingClientRect();
+             //if(parentElement.offsetLeft < childElement.offsetLeft){
+                    let weight = 10
+                    let left = Math.floor(parentElement.offsetLeft + (parentElement.offsetWidth/2))-weight;
+                    let top = Math.floor(parentElement.offsetTop + parentElement.offsetHeight)-weight*1.5;
+                    let height = Math.floor(childElement.offsetTop - top)+weight;
+                    let width = Math.floor((childElement.offsetLeft + (childElement.offsetWidth/2) - left))+weight
+                    document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
+                    <svg class="partner-link-svg" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;width:${width}px;height:${height}px;top:${top}px;left:${left}px" id="svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
+                        <path style="stroke-width: 10px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="M${width-1-weight},${height-1} C${width-1},0 0,${height-1} ${weight},0" />
+                    </svg>
+                    `;
+                //}
+            //if(createMemberReturn.family.find(m => m.children.indexOf(createMemberReturn.newmember.id) != -1).children.length > 1){
+               
+                // let left = Math.floor((parentElement.offsetLeft + (parentElement.offsetWidth/2)));
+                // let top = Math.floor(boundingRectA.top + boundingRectA.height)
+                // let height = Math.floor(boundingRectB.top - (boundingRectA.top + boundingRectA.height/2));
+                // let width = Math.floor((boundingRectA.left + boundingRectA.width/2) - (boundingRectB.left+ boundingRectB.width));
+                // let side = width < 0 ? 2 : 1;
+                // width = Math.abs(width);
+                
+            // }else{
+            //     let height = boundingRectB.top-10 - (createMemberReturn.newmember.depth > 1 ? boundingRectA.height : 0);
+            //     let top = boundingRectA.top+boundingRectA.height/2;
+            //     document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`<span class="partner-link vertical hide" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" style="height:${height}px;top:${top}px;"><span>`;
+            //     setTimeout(() => {
+            //         let partnerLink = document.querySelector('.partner-link.hide');
+            //         partnerLink.classList.remove('hide')
+            //         setTimeout(() => {
+            //             partnerLink.style.transition= "none";
+            //         }, 200);
+            //     }, 10);
+            // }
         }
     }
 }
 
-function reComputePartnerLink(){
+function reComputeLink(){
     document.querySelectorAll('.partner-link').forEach(link => {
         let id = link.id.split("-")[1];
         if(link.classList.contains('horizontal')){
@@ -225,14 +248,44 @@ function reComputePartnerLink(){
             let boundingRectA = document.querySelector('#m-'+parentId).getBoundingClientRect();
             let boundingRectB = document.querySelector('#m-'+id).getBoundingClientRect();
             let top = boundingRectA.top+boundingRectA.height/2;
-            let height = boundingRectB.top-10;
+            let height = boundingRectB.top-boundingRectB.height/2-10;
             link.style.height = height + "px";
             link.style.top = top+"px";
         }
     }); 
+
+    document.querySelectorAll('.partner-link-svg').forEach(link => {
+        let childElement = document.querySelector('#m-'+link.id.split('-')[1]);
+        let parentElement = document.querySelector('#m-'+link.id.split("-")[2]);
+        if(parentElement.offsetLeft < childElement.offsetLeft){
+            let weight = 10
+            let left = Math.floor(parentElement.offsetLeft + (parentElement.offsetWidth/2))-weight;
+            let top = Math.floor(parentElement.offsetTop + parentElement.offsetHeight)-weight*1.5;
+            let height = Math.floor(childElement.offsetTop - top)+weight;
+            let width = Math.floor((childElement.offsetLeft + (childElement.offsetWidth/2) - left))+weight;
+            link.style.width = width+"px";
+            //link.style.height = height+"px";
+            //link.style.top = top+"px";
+            link.style.left = left+"px";
+            link.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            link.querySelector('path').setAttribute('d', `M${width-1-weight},${height-1} C${width-1},0 0,${height-1} ${weight},0`)
+        }else{
+            let weight = 10
+            let left = Math.floor(childElement.offsetLeft + (childElement.offsetWidth/2))-weight;
+            let top = Math.floor(parentElement.offsetTop + parentElement.offsetHeight)-weight*1.5;
+            let height = Math.floor(childElement.offsetTop - top)+weight;
+            let width = Math.floor(parentElement.offsetLeft - childElement.offsetLeft)+weight
+            link.style.width = width+2*weight+"px";
+            //link.style.height = height+"px";
+            //link.style.top = top+"px";
+            link.style.left = left+"px";
+            link.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            link.querySelector('path').setAttribute('d', `M0,${height-1} C0,0 ${width-1},${height-1} ${width-1+weight},0`)
+        }
+    });
 }
 
-window.addEventListener('resize', reComputePartnerLink);
+window.addEventListener('resize', reComputeLink);
 
 window.addEventListener('load', async() => {
     let createMemberReturn = await member.createMember();

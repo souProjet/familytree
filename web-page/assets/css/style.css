@@ -184,7 +184,6 @@ div.container {
 .container .row .partner-link {
     position: absolute;
     background-color: #bde582;
-    height: 13px;
     z-index: 5;
     opacity: 1;
     display: flex;
@@ -194,8 +193,24 @@ div.container {
     transition: all .2s cubic-bezier(.76, .46, .62, 1.13);
 }
 
+.container .row .partner-link.horizontal {
+    height: 13px;
+}
+
+.container .row .partner-link.vertical {
+    width: 13px;
+    z-index: 4 !important;
+}
+
 .container .row .partner-link.hide {
     opacity: 0;
-    width: 0 !important;
     transition: all .2s cubic-bezier(.76, .46, .62, 1.13);
+}
+
+.container .row .partner-link.hide.horizontal {
+    width: 0 !important;
+}
+
+.container .row .partner-link.hide.vertical {
+    height: 0 !important;
 }

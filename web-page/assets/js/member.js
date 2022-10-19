@@ -8,20 +8,22 @@ class Member {
 
             if (parentsID) {
                 parentsID.forEach(parentID => {
-                    if (parentID.match(/([A-Z0-9]{6})/g)) {
-                        if (this.family.find(member => member.id == parentID)) {
-                            this.family.find(member => member.id == parentID).children.push(memberID);
+                    if (parentID) {
+                        if (parentID.match(/([A-Z0-9]{6})/g)) {
+                            if (this.family.find(member => member.id == parentID)) {
+                                this.family.find(member => member.id == parentID).children.push(memberID);
+                            } else {
+                                resolve({
+                                    completed: false,
+                                    error: `[${parentID}] : Membre non trouvé`
+                                })
+                            }
                         } else {
                             resolve({
                                 completed: false,
-                                error: `[${parentID}] : Membre non trouvé`
+                                error: `[${parentID}] : Ceci n'est pas un ID valide`
                             })
                         }
-                    } else {
-                        resolve({
-                            completed: false,
-                            error: `[${parentID}] : Ceci n'est pas un ID valide`
-                        })
                     }
                 });
             }
@@ -53,44 +55,44 @@ class Member {
         });
     }
     createHTMLmember(member, isPartner) {
-            return new Promise(async resolve => {
-                        try {
-                            let row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
-                            if (!row) {
-                                let rowDiv = document.createElement('div');
-                                rowDiv.classList.add('row')
-                                document.querySelector('.container').appendChild(rowDiv);
-                            }
-                            row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
-                            if (isPartner) {
-                                let memberDiv = document.createElement('div');
-                                memberDiv.classList.add('member');
-                                memberDiv.classList.add('hide');
-                                memberDiv.id = "m-" + member.id;
-                                let gender = document.querySelector('#m-' + isPartner).querySelector('img').src.indexOf('female') != -1 ? `male` : `female`;
-                                let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
-                                memberDiv.innerHTML = `
-                    <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                        <img src="./assets/images/${gender}Default.png" alt="Picture">
-                    </div>
-                    <p class="name">
-                        <span class="hider-1"></span>
-                        <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
-                        <span class="hider-2"></span>
-                    </p>`;
-                                document.querySelector('#m-' + isPartner).insertAdjacentElement('afterend', memberDiv)
-                            } else {
-                                row.innerHTML += `
-                    <div class="member hide" id="m-${member.id}">
+        return new Promise(async resolve => {
+            try {
+                let row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
+                if (!row) {
+                    let rowDiv = document.createElement('div');
+                    rowDiv.classList.add('row')
+                    document.querySelector('.container').appendChild(rowDiv);
+                }
+                row = document.querySelector('.row') ? document.querySelectorAll('.row')[this.family.find(m => m.children.indexOf(member.id) != -1) == undefined ? 0 : 1] : undefined
+                if (isPartner) {
+                    let memberDiv = document.createElement('div');
+                    memberDiv.classList.add('member');
+                    memberDiv.classList.add('hide');
+                    memberDiv.id = "m-" + member.id;
+                    let gender = document.querySelector('#m-' + isPartner).querySelector('img').src.indexOf('female') != -1 ? `male` : `female`;
+                    let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
+                    memberDiv.innerHTML = `
                         <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                            <img src="./assets/images/maleDefault.png" alt="Picture">
+                            <img src="./assets/images/${gender}Default.png" alt="Picture">
                         </div>
                         <p class="name">
                             <span class="hider-1"></span>
-                            <span class="editable-name" contenteditable="true">${(await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first}</span>
-                            <span class="hider-2"></span></p>
-                    </div>
-                `;
+                            <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
+                            <span class="hider-2"></span>
+                        </p>`;
+                    document.querySelector('#m-' + isPartner).insertAdjacentElement('afterend', memberDiv)
+                } else {
+                    let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                    row.innerHTML += `
+                        <div class="member hide" id="m-${member.id}">
+                            <div class="picture" onclick="memberClicked(event, this.parentNode);">
+                                <img src="./assets/images/maleDefault.png" alt="Picture">
+                            </div>
+                            <p class="name">
+                                <span class="hider-1"></span>
+                                <span class="editable-name" contenteditable="true">${randomName}</span>
+                                <span class="hider-2"></span></p>
+                        </div>`;
                 }
                 setTimeout(() => {
                     row.querySelector('.member.hide').classList.remove('hide')

@@ -84,7 +84,7 @@ async function memberClicked(e, memberHTML) {
             </g>
         </svg>
 
-        <svg class="add-child hide" width="30px" height="30px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 328.5 328.5" style="enable-background:new 0 0 328.5 328.5;" xml:space="preserve">
+        <svg onclick="addChild(this.parentNode)" class="add-child hide" width="30px" height="30px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 328.5 328.5" style="enable-background:new 0 0 328.5 328.5;" xml:space="preserve">
             <g fill="#2682ff">
                 <g>
                     <polygon points="96.333,150.918 96.333,135.918 55.667,135.918 55.667,95.251 40.667,95.251 40.667,135.918 0,135.918 0,150.918 
@@ -104,7 +104,7 @@ async function memberClicked(e, memberHTML) {
     if(memberJSON.member.with){
         partnerLinkHtml = (document.querySelector('#l-' + memberHTML.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberHTML.id.split('-')[1]))
         partnerLinkHtml.innerHTML+=`
-        <svg class="add-child hide" width="35px" height="35px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 328.5 328.5" style="enable-background:new 0 0 328.5 328.5;" xml:space="preserve">
+        <svg onclick="addChild(document.querySelector('#m-${memberHTML.id.split('-')[1]}'))" class="add-child hide" width="35px" height="35px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 328.5 328.5" style="enable-background:new 0 0 328.5 328.5;" xml:space="preserve">
             <g fill="#2682ff">
                 <g>
                     <polygon points="96.333,150.918 96.333,135.918 55.667,135.918 55.667,95.251 40.667,95.251 40.667,135.918 0,135.918 0,150.918 
@@ -159,7 +159,7 @@ async function addPartner(memberHTML){
             let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
 
             document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`
-                <span class="partner-link hide" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;">
+                <span class="partner-link horizontal hide" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;">
                     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 502 502" style="enable-background:new 0 0 502 502;" xml:space="preserve" width="40px" height="40px">
                         <g>
                             <g>
@@ -186,14 +186,49 @@ async function addPartner(memberHTML){
     }
 }
 
+async function addChild(memberHTML){
+    let memberHTMLId = memberHTML.id.split('-')[1];
+    let memberJSON = await member.getMember(memberHTMLId);
+    if(memberJSON.completed){
+        let createMemberReturn = await member.createMember(false, [memberJSON.member.id, memberJSON.member.with ? memberJSON.member.with : null]);
+        if(createMemberReturn.completed){
+        //si c'est le premier ajouter un trait vertical
+        let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
+        let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
+        let top = boundingRectA.top+boundingRectA.height/2;
+        let height = boundingRectB.top-10;
+        document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
+                <span class="partner-link vertical hide" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" style="height:${height}px;top:${top}px;"><span>`;
+            setTimeout(() => {
+                let partnerLink = document.querySelector('.partner-link.hide');
+                partnerLink.classList.remove('hide')
+                setTimeout(() => {
+                    partnerLink.style.transition= "none";
+                }, 200);
+            }, 10);
+
+        }
+    }
+}
+
 function reComputePartnerLink(){
     document.querySelectorAll('.partner-link').forEach(link => {
         let id = link.id.split("-")[1];
-        let parnerId = link.id.split("-")[2];
-        let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
-        let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
-        link.style.width = (boundingRectB.x - boundingRectA.x)+ "px";
-        link.style.left = boundingRectA.left+boundingRectA.width/2 +"px";
+        if(link.classList.contains('horizontal')){
+            let parnerId = link.id.split("-")[2];
+            let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
+            let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
+            link.style.width = (boundingRectB.x - boundingRectA.x)+ "px";
+            link.style.left = boundingRectA.left+boundingRectA.width/2 +"px";
+        }else{
+            let parentId = link.id.split("-")[2];
+            let boundingRectA = document.querySelector('#m-'+parentId).getBoundingClientRect();
+            let boundingRectB = document.querySelector('#m-'+id).getBoundingClientRect();
+            let top = boundingRectA.top+boundingRectA.height/2;
+            let height = boundingRectB.top-10;
+            link.style.height = height + "px";
+            link.style.top = top+"px";
+        }
     }); 
 }
 

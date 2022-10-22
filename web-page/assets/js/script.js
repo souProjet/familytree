@@ -181,6 +181,7 @@ async function addPartner(memberHTML){
                 partnerLink.classList.remove('hide')
                 setTimeout(() => {
                     partnerLink.style.transition= "none";
+                    reComputeLink();
                 }, 200);
             }, 10);
         }
@@ -193,43 +194,13 @@ async function addChild(memberHTML){
     if(memberJSON.completed){
         let createMemberReturn = await member.createMember(false, [memberJSON.member.id, memberJSON.member.with ? memberJSON.member.with : null]);
         if(createMemberReturn.completed){
-            let childElement = document.querySelector('#m-'+createMemberReturn.newmember.id);
-            let parentElement = document.querySelector('#m-'+memberHTMLId)
-            let boundingRectA = parentElement.getBoundingClientRect();
-            let boundingRectB = childElement.getBoundingClientRect();
-             //if(parentElement.offsetLeft < childElement.offsetLeft){
-                    let weight = 10
-                    let left = Math.floor(parentElement.offsetLeft + (parentElement.offsetWidth/2))-weight;
-                    let top = Math.floor(parentElement.offsetTop + parentElement.offsetHeight)-weight*1.5;
-                    let height = Math.floor(childElement.offsetTop - top)+weight;
-                    let width = Math.floor((childElement.offsetLeft + (childElement.offsetWidth/2) - left))+weight
-                    document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
-                    <svg class="partner-link-svg" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;width:${width}px;height:${height}px;top:${top}px;left:${left}px" id="svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
-                        <path style="stroke-width: 10px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="M${width-1-weight},${height-1} C${width-1},0 0,${height-1} ${weight},0" />
-                    </svg>
-                    `;
-                //}
-            //if(createMemberReturn.family.find(m => m.children.indexOf(createMemberReturn.newmember.id) != -1).children.length > 1){
-               
-                // let left = Math.floor((parentElement.offsetLeft + (parentElement.offsetWidth/2)));
-                // let top = Math.floor(boundingRectA.top + boundingRectA.height)
-                // let height = Math.floor(boundingRectB.top - (boundingRectA.top + boundingRectA.height/2));
-                // let width = Math.floor((boundingRectA.left + boundingRectA.width/2) - (boundingRectB.left+ boundingRectB.width));
-                // let side = width < 0 ? 2 : 1;
-                // width = Math.abs(width);
-                
-            // }else{
-            //     let height = boundingRectB.top-10 - (createMemberReturn.newmember.depth > 1 ? boundingRectA.height : 0);
-            //     let top = boundingRectA.top+boundingRectA.height/2;
-            //     document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`<span class="partner-link vertical hide" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" style="height:${height}px;top:${top}px;"><span>`;
-            //     setTimeout(() => {
-            //         let partnerLink = document.querySelector('.partner-link.hide');
-            //         partnerLink.classList.remove('hide')
-            //         setTimeout(() => {
-            //             partnerLink.style.transition= "none";
-            //         }, 200);
-            //     }, 10);
-            // }
+            let weight = 10;
+            document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
+            <svg class="partner-link-svg" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
+                <path style="stroke-width: ${weight}px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="" />
+            </svg>
+            `;
+            reComputeLink();
         }
     }
 }
@@ -257,30 +228,34 @@ function reComputeLink(){
     document.querySelectorAll('.partner-link-svg').forEach(link => {
         let childElement = document.querySelector('#m-'+link.id.split('-')[1]);
         let parentElement = document.querySelector('#m-'+link.id.split("-")[2]);
-        if(parentElement.offsetLeft < childElement.offsetLeft){
+        let partnerLinkHtml = document.querySelector('.partner-link[id*="'+link.id.split('-')[2]+'"]');
+        let partnerSide = partnerLinkHtml ? (partnerLinkHtml.id.split('-')[1] == link.id.split('-')[2] ? 0 : 1) : null;
+        let startingPointLeft = parentElement.offsetLeft + (partnerLinkHtml ? partnerLinkHtml.offsetWidth/2 : 0) * (partnerSide ? -1 : 1);
+        let startingPointTop = parentElement.offsetTop + parentElement.offsetHeight / (partnerLinkHtml ? 2 : 1);
+        if(startingPointLeft < childElement.offsetLeft){
             let weight = 10
-            let left = Math.floor(parentElement.offsetLeft + (parentElement.offsetWidth/2))-weight;
-            let top = Math.floor(parentElement.offsetTop + parentElement.offsetHeight)-weight*1.5;
+            let left = Math.floor(startingPointLeft + (parentElement.offsetWidth/2))-weight;
+            let top = Math.floor(startingPointTop)-weight*1.5;
             let height = Math.floor(childElement.offsetTop - top)+weight;
             let width = Math.floor((childElement.offsetLeft + (childElement.offsetWidth/2) - left))+weight;
             link.style.width = width+"px";
-            //link.style.height = height+"px";
-            //link.style.top = top+"px";
             link.style.left = left+"px";
+            link.style.top = top+"px";
+            link.style.height = height+"px";
             link.setAttribute('viewBox', `0 0 ${width} ${height}`);
-            link.querySelector('path').setAttribute('d', `M${width-1-weight},${height-1} C${width-1},0 0,${height-1} ${weight},0`)
+            link.querySelector('path').setAttribute('d', `M${width-1-weight},${height-1} C${width-1},${partnerLinkHtml ? height/2 : 0} 0,${height-1} ${weight},0`)
         }else{
             let weight = 10
             let left = Math.floor(childElement.offsetLeft + (childElement.offsetWidth/2))-weight;
-            let top = Math.floor(parentElement.offsetTop + parentElement.offsetHeight)-weight*1.5;
+            let top = Math.floor(startingPointTop)-weight*1.5;
             let height = Math.floor(childElement.offsetTop - top)+weight;
-            let width = Math.floor(parentElement.offsetLeft - childElement.offsetLeft)+weight
+            let width = Math.floor(startingPointLeft - childElement.offsetLeft)+weight
             link.style.width = width+2*weight+"px";
-            //link.style.height = height+"px";
-            //link.style.top = top+"px";
             link.style.left = left+"px";
+            link.style.top = top+"px";
+            link.style.height = height+"px";
             link.setAttribute('viewBox', `0 0 ${width} ${height}`);
-            link.querySelector('path').setAttribute('d', `M0,${height-1} C0,0 ${width-1},${height-1} ${width-1+weight},0`)
+            link.querySelector('path').setAttribute('d', `M0,${height-1} C0,${partnerLinkHtml ? height/2 : 0} ${width-1},${height-1} ${width-1+weight},0`)
         }
     });
 }

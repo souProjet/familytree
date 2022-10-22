@@ -12,7 +12,7 @@ async function removeMemberFocusElements() {
         memberActive.querySelector('.add-child') ? memberActive.querySelector('.add-child').classList.add('hide') : null;
 
         let memberJSON = await member.getMember(memberActive.id.split('-')[1]);
-        let partnerLink = null;
+        let partnerLinkHtml = null;
         if (memberJSON.member.with && memberActive.id.split('-')[1] !== partnerFocused) {
             partnerLinkHtml = (document.querySelector('#l-' + memberActive.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberActive.id.split('-')[1]))
             partnerLinkHtml ? partnerLinkHtml.style.backgroundColor = "#bde582" : null;

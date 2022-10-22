@@ -54,7 +54,7 @@ class Member {
             }
             this.family.push(newMember);
 
-            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner, newMember.depth)
+            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner, newMember.depth, parentsID ? parentsID[0] : null)
             if (createHTMLmemberReturn.completed) {
                 resolve({
                     completed: true,
@@ -69,7 +69,7 @@ class Member {
             }
         });
     }
-    createHTMLmember(member, isPartner, depth) {
+    createHTMLmember(member, isPartner, depth, parentID) {
         return new Promise(async resolve => {
             try {
                 if (!document.querySelectorAll('.row')[depth]) {
@@ -99,18 +99,85 @@ class Member {
                         </p>`;
                     document.querySelector('#m-' + isPartner).insertAdjacentElement('afterend', memberDiv)
                 } else {
-                    let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
-                    let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
-                    row.innerHTML += `
-                        <div class="member hide" id="m-${member.id}" ${height}>
+                    let afterWho = parentID ? (this.family.find(m => m.id == parentID).children.length > 1 ? this.family.find(m => m.id == parentID).children[this.family.find(m => m.id == parentID).children.length - 2] : null) : null
+                    if (!afterWho) {
+                        if (parentID) {
+                            let membersInRow = document.querySelector('#m-' + parentID).parentNode.querySelectorAll('.member');
+                            let nextMember = null;
+                            for (let n = 0; n < membersInRow.length; n++) {
+                                if (membersInRow[n].id == "m-" + parentID && (membersInRow[n + 1] ? (membersInRow[n + 1].id != "m-" + this.family.find(m => m.id == parentID).with) : false) && this.family.find(m => m.id == membersInRow[n + 1].id.split('-')[1]).children != 0) {
+                                    nextMember = membersInRow[n + 1];
+                                }
+                            }
+                            if (nextMember) {
+                                let nextMemberId = nextMember.id.split('-')[1];
+                                let memberDiv = document.createElement('div');
+                                memberDiv.classList.add('member');
+                                memberDiv.classList.add('hide');
+                                if (depth) {
+                                    memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
+                                }
+                                memberDiv.id = "m-" + member.id;
+                                let randomName = await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())
+                                memberDiv.innerHTML = `
+                                    <div class="picture" onclick="memberClicked(event, this.parentNode);">
+                                        <img src="./assets/images/maleDefault.png" alt="Picture">
+                                    </div>
+                                    <p class="name">
+                                        <span class="hider-1"></span>
+                                        <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
+                                        <span class="hider-2"></span>
+                                    </p>`;
+                                document.querySelector('#m-' + this.family.find(m => m.id == nextMemberId).children[this.family.find(m => m.id == nextMemberId).children.length - 1]).insertAdjacentElement('beforebegin', memberDiv)
+
+                            } else {
+                                let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                                let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
+                                row.innerHTML += `
+                                    <div class="member hide" id="m-${member.id}" ${height}>
+                                        <div class="picture" onclick="memberClicked(event, this.parentNode);">
+                                            <img src="./assets/images/maleDefault.png" alt="Picture">
+                                        </div>
+                                        <p class="name">
+                                            <span class="hider-1"></span>
+                                            <span class="editable-name" contenteditable="true">${randomName}</span>
+                                            <span class="hider-2"></span></p>
+                                    </div>`;
+                            }
+                        } else {
+                            let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                            let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
+                            row.innerHTML += `
+                                <div class="member hide" id="m-${member.id}" ${height}>
+                                    <div class="picture" onclick="memberClicked(event, this.parentNode);">
+                                        <img src="./assets/images/maleDefault.png" alt="Picture">
+                                    </div>
+                                    <p class="name">
+                                        <span class="hider-1"></span>
+                                        <span class="editable-name" contenteditable="true">${randomName}</span>
+                                        <span class="hider-2"></span></p>
+                                </div>`;
+                        }
+                    } else {
+                        let memberDiv = document.createElement('div');
+                        memberDiv.classList.add('member');
+                        memberDiv.classList.add('hide');
+                        if (depth) {
+                            memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
+                        }
+                        memberDiv.id = "m-" + member.id;
+                        let randomName = await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())
+                        memberDiv.innerHTML = `
                             <div class="picture" onclick="memberClicked(event, this.parentNode);">
                                 <img src="./assets/images/maleDefault.png" alt="Picture">
                             </div>
                             <p class="name">
                                 <span class="hider-1"></span>
-                                <span class="editable-name" contenteditable="true">${randomName}</span>
-                                <span class="hider-2"></span></p>
-                        </div>`;
+                                <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
+                                <span class="hider-2"></span>
+                            </p>`;
+                        document.querySelector('#m-' + afterWho).insertAdjacentElement('afterend', memberDiv)
+                    }
                 }
                 setTimeout(() => {
                     row.querySelector('.member.hide').classList.remove('hide');
@@ -119,6 +186,7 @@ class Member {
                     }, 100);
                 }, 30);
             } catch (err) {
+                console.log(err)
                 resolve({
                     completed: false,
                     error: err

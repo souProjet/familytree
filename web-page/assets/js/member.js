@@ -97,9 +97,10 @@ class Member {
                             <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
                             <span class="hider-2"></span>
                         </p>`;
+
                     document.querySelector('#m-' + isPartner).insertAdjacentElement('afterend', memberDiv)
                 } else {
-                    let afterWho = parentID ? (this.family.find(m => m.id == parentID).children.length > 1 ? this.family.find(m => m.id == parentID).children[this.family.find(m => m.id == parentID).children.length - 2] : null) : null
+                    let afterWho = parentID ? (this.family.find(m => m.id == parentID).children.length > 2 ? this.family.find(m => m.id == parentID).children[this.family.find(m => m.id == parentID).children.length - 2] : null) : null
                     if (!afterWho) {
                         if (parentID) {
                             let membersInRow = document.querySelector('#m-' + parentID).parentNode.querySelectorAll('.member');
@@ -118,25 +119,27 @@ class Member {
                                     memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
                                 }
                                 memberDiv.id = "m-" + member.id;
-                                let randomName = await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())
+                                let gender = Math.floor(Math.random() * 2) ? 'male' : 'female';
+                                let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
                                 memberDiv.innerHTML = `
                                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                        <img src="./assets/images/maleDefault.png" alt="Picture">
+                                        <img src="./assets/images/${gender}Default.png" alt="Picture">
                                     </div>
                                     <p class="name">
                                         <span class="hider-1"></span>
                                         <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
                                         <span class="hider-2"></span>
                                     </p>`;
-                                document.querySelector('#m-' + this.family.find(m => m.id == nextMemberId).children[this.family.find(m => m.id == nextMemberId).children.length - 1]).insertAdjacentElement('beforebegin', memberDiv)
+                                document.querySelector('#m-' + this.family.find(m => m.id == nextMemberId).children[0]).insertAdjacentElement('beforebegin', memberDiv)
 
                             } else {
-                                let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                                let gender = Math.floor(Math.random() * 2) ? 'male' : 'female';
+                                let randomName = (await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
                                 let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
                                 row.innerHTML += `
                                     <div class="member hide" id="m-${member.id}" ${height}>
                                         <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                            <img src="./assets/images/maleDefault.png" alt="Picture">
+                                            <img src="./assets/images/${gender}Default.png" alt="Picture">
                                         </div>
                                         <p class="name">
                                             <span class="hider-1"></span>
@@ -145,12 +148,13 @@ class Member {
                                     </div>`;
                             }
                         } else {
-                            let randomName = (await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                            let gender = Math.floor(Math.random() * 2) ? 'male' : 'female';
+                            let randomName = (await fetch(`https://randomuser.me/api/?gender=m${gender}ale&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
                             let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
                             row.innerHTML += `
                                 <div class="member hide" id="m-${member.id}" ${height}>
                                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                        <img src="./assets/images/maleDefault.png" alt="Picture">
+                                        <img src="./assets/images/${gender}Default.png" alt="Picture">
                                     </div>
                                     <p class="name">
                                         <span class="hider-1"></span>
@@ -166,10 +170,11 @@ class Member {
                             memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
                         }
                         memberDiv.id = "m-" + member.id;
-                        let randomName = await fetch(`https://randomuser.me/api/?gender=male&nat=fr&inc=name`).then(res => res.json())
+                        let gender = Math.floor(Math.random() * 2) ? 'male' : 'female';
+                        let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
                         memberDiv.innerHTML = `
                             <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                <img src="./assets/images/maleDefault.png" alt="Picture">
+                                <img src="./assets/images/${gender}Default.png" alt="Picture">
                             </div>
                             <p class="name">
                                 <span class="hider-1"></span>
@@ -202,7 +207,10 @@ class Member {
         return new Promise(async resolve => {
             if (id.match(/([A-Z0-9]{6})/g)) {
                 if (this.family.find(member => member.id == id)) {
-                    this.family = this.family.filter(member => member.id != id);
+                    this.family = this.family.filter(member => member.id != id)
+                    for (let i = 0; i < this.family.length; i++) {
+                        this.family[i].children = this.family[i].children.filter(child => child != id);
+                    }
                     resolve({
                         completed: true,
                         family: this.family

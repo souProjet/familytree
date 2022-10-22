@@ -158,10 +158,10 @@ async function addPartner(memberHTML){
             
             let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
             let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
-
+            let height = 13 - (createMemberReturn.newmember.depth > 0 ? (Math.log10(parseInt(createMemberReturn.newmember.depth) * (parseInt(createMemberReturn.newmember.depth) * 40))) : 0);
             document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`
-                <span class="partner-link horizontal hide" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 502 502" style="enable-background:new 0 0 502 502;" xml:space="preserve" width="40px" height="40px">
+                <span class="partner-link hide" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="height:${height}px;width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 502 502" style="enable-background:new 0 0 502 502;" xml:space="preserve" width="${height*3.5}px" height="${height*3.5}px">
                         <g>
                             <g>
                                 <path style="fill:#FF1D25;" d="M370.994,49.998c-61.509,0-112.296,45.894-119.994,105.306    c-7.698-59.412-58.485-105.306-119.994-105.306C64.176,49.998,10,104.174,10,171.004s80.283,135.528,116.45,166.574    C160.239,366.582,251,452.002,251,452.002s90.761-85.42,124.55-114.424C411.717,306.532,492,237.834,492,171.004    S437.824,49.998,370.994,49.998z"/>
@@ -194,9 +194,9 @@ async function addChild(memberHTML){
     if(memberJSON.completed){
         let createMemberReturn = await member.createMember(false, [memberJSON.member.id, memberJSON.member.with ? memberJSON.member.with : null]);
         if(createMemberReturn.completed){
-            let weight = 10;
+            let weight = 10 - Math.log10(parseInt(createMemberReturn.newmember.depth) * (parseInt(createMemberReturn.newmember.depth) * 20));
             document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
-            <svg class="partner-link-svg" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
+            <svg class="child-link" depth="${createMemberReturn.newmember.depth}" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
                 <path style="stroke-width: ${weight}px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="" />
             </svg>
             `;
@@ -208,32 +208,22 @@ async function addChild(memberHTML){
 function reComputeLink(){
     document.querySelectorAll('.partner-link').forEach(link => {
         let id = link.id.split("-")[1];
-        if(link.classList.contains('horizontal')){
-            let parnerId = link.id.split("-")[2];
-            let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
-            let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
-            link.style.width = (boundingRectB.x - boundingRectA.x)+ "px";
-            link.style.left = boundingRectA.left+boundingRectA.width/2 +"px";
-        }else{
-            let parentId = link.id.split("-")[2];
-            let boundingRectA = document.querySelector('#m-'+parentId).getBoundingClientRect();
-            let boundingRectB = document.querySelector('#m-'+id).getBoundingClientRect();
-            let top = boundingRectA.top+boundingRectA.height/2;
-            let height = boundingRectB.top-boundingRectB.height/2-10;
-            link.style.height = height + "px";
-            link.style.top = top+"px";
-        }
+        let parnerId = link.id.split("-")[2];
+        let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
+        let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
+        link.style.width = (boundingRectB.x - boundingRectA.x)+ "px";
+        link.style.left = boundingRectA.left+boundingRectA.width/2 +"px";
     }); 
 
-    document.querySelectorAll('.partner-link-svg').forEach(link => {
+    document.querySelectorAll('.child-link').forEach(link => {
         let childElement = document.querySelector('#m-'+link.id.split('-')[1]);
         let parentElement = document.querySelector('#m-'+link.id.split("-")[2]);
+        let weight = 10 - Math.log10(parseInt(link.getAttribute("depth")) * (parseInt(link.getAttribute("depth")) * 20));
         let partnerLinkHtml = document.querySelector('.partner-link[id*="'+link.id.split('-')[2]+'"]');
         let partnerSide = partnerLinkHtml ? (partnerLinkHtml.id.split('-')[1] == link.id.split('-')[2] ? 0 : 1) : null;
         let startingPointLeft = parentElement.offsetLeft + (partnerLinkHtml ? partnerLinkHtml.offsetWidth/2 : 0) * (partnerSide ? -1 : 1);
-        let startingPointTop = parentElement.offsetTop + parentElement.offsetHeight / (partnerLinkHtml ? 2 : 1);
+        let startingPointTop = parentElement.offsetTop + parentElement.offsetHeight / (partnerLinkHtml ? 2 : 1) + (partnerLinkHtml ? weight : 0);
         if(startingPointLeft < childElement.offsetLeft){
-            let weight = 10
             let left = Math.floor(startingPointLeft + (parentElement.offsetWidth/2))-weight;
             let top = Math.floor(startingPointTop)-weight*1.5;
             let height = Math.floor(childElement.offsetTop - top)+weight;
@@ -245,7 +235,6 @@ function reComputeLink(){
             link.setAttribute('viewBox', `0 0 ${width} ${height}`);
             link.querySelector('path').setAttribute('d', `M${width-1-weight},${height-1} C${width-1},${partnerLinkHtml ? height/2 : 0} 0,${height-1} ${weight},0`)
         }else{
-            let weight = 10
             let left = Math.floor(childElement.offsetLeft + (childElement.offsetWidth/2))-weight;
             let top = Math.floor(startingPointTop)-weight*1.5;
             let height = Math.floor(childElement.offsetTop - top)+weight;

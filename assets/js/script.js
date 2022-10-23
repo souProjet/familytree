@@ -41,8 +41,8 @@ async function memberClicked(e, memberHTML) {
         (document.querySelector('#l-' + memberHTML.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberHTML.id.split('-')[1])).style.backgroundColor = "#79a932";
     }
     memberHTML.innerHTML += `
-        <div class="context-menu hide">
-            <svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
+        <div class="context-menu hide" ${memberJSON.member.children.length ? `style="height:80px;"`:``}>
+            ${!memberJSON.member.children.length ? `<svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
                 <g fill="red">
                     <path d="M336.559,68.611L231.016,174.165l105.543,105.549c15.699,15.705,15.699,41.145,0,56.85
                         c-7.844,7.844-18.128,11.769-28.407,11.769c-10.296,0-20.581-3.919-28.419-11.769L174.167,231.003L68.609,336.563
@@ -50,9 +50,33 @@ async function memberClicked(e, memberHTML) {
                         l105.54-105.549L11.774,68.611c-15.699-15.699-15.699-41.145,0-56.844c15.696-15.687,41.127-15.687,56.829,0l105.563,105.554
                         L279.721,11.767c15.705-15.687,41.139-15.687,56.832,0C352.258,27.466,352.258,52.912,336.559,68.611z"/>
                 </g>
+            </svg>`:``}
+            <svg onclick="switchGender(this.parentNode.parentNode)" width="25px" height="25px"  version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 464 464" style="enable-background:new 0 0 464 464;" xml:space="preserve">
+                <g>
+                    <path style="fill:#A0DCE6;" d="M148,328c-53.02,0-96-42.98-96-96s42.98-96,96-96c32.848,0,61.838,16.502,79.146,41.663
+                        c10.174-4.205,21.006-7.141,32.302-8.6c-19.495-34.381-54.465-58.836-95.447-63.958V57.942l15.031,15.029
+                        c3.124,3.123,8.189,3.123,11.313-0.001l11.312-11.312c3.124-3.124,3.125-8.189,0-11.313L153.657,2.344
+                        c-3.125-3.125-8.19-3.125-11.314,0L94.344,50.346c-3.124,3.124-3.124,8.189,0,11.313l11.312,11.312
+                        c3.124,3.124,8.189,3.124,11.313,0.001L132,57.942v47.163C68.877,112.995,20,166.738,20,232c0,70.692,57.308,128,128,128
+                        c5.6,0,11.116-0.362,16.527-1.06c-5.453-9.637-9.698-20.046-12.516-31.03C150.68,327.965,149.344,328,148,328z"/>
+                    <path style="fill:#A0DCE6;" d="M276,232c0-11.021-1.399-21.711-4.02-31.91c-11.032,0.455-21.584,2.765-31.349,6.637
+                        C242.823,214.781,244,223.252,244,232c0,40.529-25.116,75.19-60.631,89.272c2.863,10.517,7.467,20.314,13.486,29.064
+                        C243.309,331.138,276,285.39,276,232z"/>
+                    <path style="fill:#E86464;" d="M421.515,418.888l20.142-20.143c3.125-3.124,3.125-8.189,0-11.313l-11.313-11.313
+                        c-3.125-3.124-8.189-3.124-11.314,0l-20.142,20.142l-21.859-21.858C393.872,352.729,404,325.574,404,296
+                        c0-70.692-57.308-128-128-128c-5.609,0-11.134,0.364-16.553,1.063c-11.296,1.459-22.128,4.395-32.302,8.6
+                        C180.692,196.863,148,242.61,148,296c0,11.018,1.393,21.71,4.011,31.911c2.818,10.983,7.063,21.393,12.516,31.03
+                        C186.504,397.781,228.188,424,276,424c29.574,0,56.728-10.128,78.401-26.972l21.858,21.859l-20.142,20.142
+                        c-3.124,3.124-3.124,8.189,0,11.314l11.314,11.313c3.124,3.124,8.189,3.124,11.313,0l20.142-20.143l20.142,20.143
+                        c3.125,3.124,8.189,3.124,11.314,0l11.313-11.313c3.125-3.125,3.125-8.19,0-11.314L421.515,418.888z M276,392
+                        c-32.848,0-61.838-16.501-79.145-41.663c-6.019-8.75-10.623-18.547-13.486-29.064C181.177,313.22,180,304.748,180,296
+                        c0-40.529,25.116-75.189,60.631-89.272c9.765-3.872,20.317-6.183,31.349-6.637c1.334-0.055,2.673-0.09,4.02-0.09
+                        c53.02,0,96,42.98,96,96S329.02,392,276,392z"/>
+                </g>
             </svg>
+
             <svg onclick="uploadPicture(this.parentNode.parentNode)" width="25px" height="25px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 384.97 384.97" style="enable-background:new 0 0 384.97 384.97;" xml:space="preserve">
-            <g>
+            <g fill="#a5d8e2">
                 <g id="Upload">
                     <path d="M372.939,264.641c-6.641,0-12.03,5.39-12.03,12.03v84.212H24.061v-84.212c0-6.641-5.39-12.03-12.03-12.03
                         S0,270.031,0,276.671v96.242c0,6.641,5.39,12.03,12.03,12.03h360.909c6.641,0,12.03-5.39,12.03-12.03v-96.242
@@ -204,6 +228,40 @@ async function addChild(memberHTML){
         }
     }
 }
+let uploadInput = document.querySelector('#upload');
+async function uploadPicture(memberHTML){
+    uploadInput.setAttribute('target', memberHTML.id)
+    uploadInput.click();
+}
+
+uploadInput.addEventListener('change', e => {
+    let input = e.target;
+    let reader = new FileReader();
+    reader.onload = function(){
+        let dataURL = reader.result;
+        let target = document.querySelector('#'+input.getAttribute('target')).querySelector('img');
+        target.classList.add('switch');
+        setTimeout(() => {
+            target.src = dataURL;
+            setTimeout(() => {
+                target.classList.remove('switch');
+            },200);
+        },200);
+    }
+    reader.readAsDataURL(input.files[0]);
+})
+
+async function switchGender(memberHTML){
+    let gender = memberHTML.querySelector('img').src.indexOf('female') != -1 ? `male` : `female`;
+    memberHTML.querySelector('img').classList.add('switch');
+    setTimeout(() => {
+        memberHTML.querySelector('img').src = `./images/${gender}Default.png`;
+        setTimeout(() => {
+            memberHTML.querySelector('img').classList.remove('switch');
+        },200);
+    },200);
+
+}
 
 function reComputeLink(){
     document.querySelectorAll('.partner-link').forEach(link => {
@@ -246,6 +304,48 @@ function reComputeLink(){
             link.setAttribute('viewBox', `0 0 ${width} ${height}`);
             link.querySelector('path').setAttribute('d', `M0,${height-1} C0,${partnerLinkHtml ? height/2 : 0} ${width-1},${height-1} ${width-1+weight},0`)
         }
+    });
+}
+
+
+function download(){
+    let targetElem = document.querySelector('.container');
+
+    let svgElements = []; 
+    targetElem.querySelectorAll('svg').forEach(svg => {
+        let canvas = document.createElement('canvas');
+        canvas.style.position = "absolute";
+        canvas.style.left = svg.style.left;
+        canvas.style.top = svg.style.top;
+
+        svg.replaceWith(canvas);
+
+        let content = svg.outerHTML;
+        canvg(canvas, content)
+        svgElements.push({
+            svg:svg,
+            canvas: canvas
+        });
+
+    })
+
+    html2canvas(targetElem).then(canvas => {
+        document.body.appendChild(canvas);
+
+        let MIME_TYPE = "image/png";
+        let imgURL = canvas.toDataURL(MIME_TYPE);
+
+        let dlink = document.createElement('a');
+        dlink.download = "arbre_genealogique.png";
+        dlink.href = imgURL;
+        dlink.dataset.downlaodurl = [MIME_TYPE, dlink.download, dlink.href].join(':');
+        dlink.style.display="none";
+        document.body.appendChild(dlink);
+        dlink.click();
+        document.body.removeChild(dlink);
+        svgElements.forEach(svg => {
+            svg.canvas.replaceWith(svg.svg);
+        })
     });
 }
 

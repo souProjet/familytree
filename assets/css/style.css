@@ -14,6 +14,7 @@ div.container {
     height: 100%;
     width: 100%;
     background-color: aliceblue;
+    /* background: linear-gradient(315deg, #ffffff, #d7e1ec); */
     display: flex;
     flex-flow: column nowrap;
     align-items: flex-start;
@@ -71,6 +72,13 @@ div.container {
     aspect-ratio: 1;
     object-fit: contain;
     border-radius: 50%;
+    transition: all .2s cubic-bezier(.41, 1.14, .75, 1.22);
+}
+
+.container .row .member .picture img.switch {
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: all .2s cubic-bezier(.41, 1.01, .5, .84);
 }
 
 .container .row .member .name {
@@ -115,7 +123,7 @@ div.container {
     right: -40px;
     top: 0;
     width: 40px;
-    height: 80px;
+    height: 120px;
     background-color: white;
     border: 1px solid rgba(57, 76, 96, 0.15);
     box-shadow: 0 2px 2px rgba(57, 76, 96, 0.15);
@@ -157,7 +165,7 @@ div.container {
     z-index: 15;
     position: absolute;
     right: -25px;
-    top: 60%;
+    top: 95%;
     filter: drop-shadow( 2px 2px 3px rgba(0, 0, 0, 0.4));
 }
 
@@ -204,4 +212,88 @@ div.container {
 
 .container .row .partner-link.hide.vertical {
     height: 0 !important;
+}
+
+.wrapper-button {
+    position: absolute;
+    display: inline-flex;
+    list-style: none;
+    right: 2%;
+    top: 1%;
+}
+
+.wrapper-button .button {
+    position: relative;
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 15px;
+    margin: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.wrapper-button .button .button-tooltip {
+    position: absolute;
+    bottom: 0;
+    font-size: 14px;
+    background: #ffffff;
+    color: #ffffff;
+    padding: 5px 8px;
+    border-radius: 5px;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    text-transform: uppercase;
+}
+
+.wrapper-button .button svg {
+    height: 100%;
+    width: 100%;
+}
+
+.wrapper-button .button svg g {
+    fill: #1877F2;
+}
+
+.wrapper-button .button:hover svg g {
+    fill: aliceblue;
+}
+
+.wrapper-button .button:hover {
+    background-color: #1877F2;
+}
+
+.wrapper-button .button .button-tooltip:before {
+    position: absolute;
+    content: "";
+    height: 8px;
+    width: 8px;
+    background: #1877F2;
+    top: -3px;
+    left: 50%;
+    transform: translate(-50%) rotate(45deg);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.wrapper-button .button:hover .button-tooltip {
+    bottom: -45px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    background-color: #1877F2;
+    color: aliceblue;
+}
+
+.wrapper-button .button:hover span,
+.wrapper-button .button:hover .button-tooltip {
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.1);
 }

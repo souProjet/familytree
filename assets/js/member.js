@@ -1,8 +1,13 @@
 class Member {
     constructor() {
-        this.family = [];
-    }
-    createMember(isPartner = null, parentsID) {
+            this.family = [];
+        }
+        // build(familytree) {
+        //     return new Promise(async resolve => {
+        //         console.log(familytree)
+        //     });
+        // }
+    createMember(isPartner = null, parentsID, inBuilding = false, member = false) {
         return new Promise(async resolve => {
             let memberID = utils.createID();
 
@@ -52,9 +57,13 @@ class Member {
                 "nationality": null,
                 "depth": depth
             }
+            if (member) {
+                newMember = member;
+            }
+
             this.family.push(newMember);
 
-            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner, newMember.depth, parentsID ? parentsID[0] : null)
+            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == memberID), isPartner, newMember.depth, parentsID ? parentsID[0] : null, inBuilding)
             if (createHTMLmemberReturn.completed) {
                 resolve({
                     completed: true,
@@ -69,7 +78,7 @@ class Member {
             }
         });
     }
-    createHTMLmember(member, isPartner, depth, parentID) {
+    createHTMLmember(member, isPartner, depth, parentID, inBuilding) {
         return new Promise(async resolve => {
             try {
                 if (!document.querySelectorAll('.row')[depth]) {
@@ -90,11 +99,11 @@ class Member {
                     let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
                     memberDiv.innerHTML = `
                         <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                            <img src="./assets/images/${gender}Default.png" alt="Picture">
+                            <img src="./images/${gender}Default.png" alt="Picture">
                         </div>
                         <p class="name">
                             <span class="hider-1"></span>
-                            <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
+                            <span class="editable-name" contenteditable="true">${randomName.results[0].name.first} ${randomName.results[0].name.last}</span>
                             <span class="hider-2"></span>
                         </p>`;
 
@@ -123,42 +132,42 @@ class Member {
                                 let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
                                 memberDiv.innerHTML = `
                                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                        <img src="./assets/images/${gender}Default.png" alt="Picture">
+                                        <img src="./images/${gender}Default.png" alt="Picture">
                                     </div>
                                     <p class="name">
                                         <span class="hider-1"></span>
-                                        <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
+                                        <span class="editable-name" contenteditable="true">${randomName.results[0].name.first} ${randomName.results[0].name.last}</span>
                                         <span class="hider-2"></span>
                                     </p>`;
                                 document.querySelector('#m-' + this.family.find(m => m.id == nextMemberId).children[0]).insertAdjacentElement('beforebegin', memberDiv)
 
                             } else {
                                 let gender = Math.floor(Math.random() * 2) ? 'male' : 'female';
-                                let randomName = (await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                                let randomName = (await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())).results[0].name
                                 let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
                                 row.innerHTML += `
                                     <div class="member hide" id="m-${member.id}" ${height}>
                                         <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                            <img src="./assets/images/${gender}Default.png" alt="Picture">
+                                            <img src="./images/${gender}Default.png" alt="Picture">
                                         </div>
                                         <p class="name">
                                             <span class="hider-1"></span>
-                                            <span class="editable-name" contenteditable="true">${randomName}</span>
+                                            <span class="editable-name" contenteditable="true">${randomName.first} ${randomName.last}</span>
                                             <span class="hider-2"></span></p>
                                     </div>`;
                             }
                         } else {
                             let gender = Math.floor(Math.random() * 2) ? 'male' : 'female';
-                            let randomName = (await fetch(`https://randomuser.me/api/?gender=m${gender}ale&nat=fr&inc=name`).then(res => res.json())).results[0].name.first
+                            let randomName = (await fetch(`https://randomuser.me/api/?gender=m${gender}ale&nat=fr&inc=name`).then(res => res.json())).results[0].name
                             let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
                             row.innerHTML += `
                                 <div class="member hide" id="m-${member.id}" ${height}>
                                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                        <img src="./assets/images/${gender}Default.png" alt="Picture">
+                                        <img src="./images/${gender}Default.png" alt="Picture">
                                     </div>
                                     <p class="name">
                                         <span class="hider-1"></span>
-                                        <span class="editable-name" contenteditable="true">${randomName}</span>
+                                        <span class="editable-name" contenteditable="true">${randomName.first} ${randomName.last}</span>
                                         <span class="hider-2"></span></p>
                                 </div>`;
                         }
@@ -174,14 +183,14 @@ class Member {
                         let randomName = await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())
                         memberDiv.innerHTML = `
                             <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                <img src="./assets/images/${gender}Default.png" alt="Picture">
+                                <img src="./images/${gender}Default.png" alt="Picture">
                             </div>
                             <p class="name">
                                 <span class="hider-1"></span>
-                                <span class="editable-name" contenteditable="true">${randomName.results[0].name.first}</span>
+                                <span class="editable-name" contenteditable="true">${randomName.results[0].name.first} ${randomName.results[0].name.last}</span>
                                 <span class="hider-2"></span>
                             </p>`;
-                        document.querySelector('#m-' + afterWho).insertAdjacentElement('afterend', memberDiv)
+                        document.querySelector('#m-' + afterWho).insertAdjacentElement('afterend', memberDiv);
                     }
                 }
                 setTimeout(() => {
@@ -191,12 +200,12 @@ class Member {
                     }, 100);
                 }, 30);
             } catch (err) {
-                console.log(err)
                 resolve({
                     completed: false,
                     error: err
                 });
             }
+
             resolve({
                 completed: true,
                 family: this.family
@@ -278,27 +287,42 @@ class Member {
         });
     }
     removePartner(id, idPartner) {
-        return new Promise(async resolve => {
-            if (id.match(/([A-Z0-9]{6})/g) && idPartner.match(/([A-Z0-9]{6})/g)) {
-                if (this.family.find(member => member.id == id) && this.family.find(member => member.id == idPartner)) {
-                    this.family.find(member => member.id == id).with = null;
-                    resolve({
-                        completed: true,
-                        family: this.family
-                    })
+            return new Promise(async resolve => {
+                if (id.match(/([A-Z0-9]{6})/g) && idPartner.match(/([A-Z0-9]{6})/g)) {
+                    if (this.family.find(member => member.id == id) && this.family.find(member => member.id == idPartner)) {
+                        this.family.find(member => member.id == id).with = null;
+                        resolve({
+                            completed: true,
+                            family: this.family
+                        })
+                    } else {
+                        resolve({
+                            completed: false,
+                            error: `[${!this.family.find(member => member.id == id) ? id : idPartner}] : Ceci n'est pas un ID valide`
+                        })
+                    }
                 } else {
                     resolve({
                         completed: false,
-                        error: `[${!this.family.find(member => member.id == id) ? id : idPartner}] : Ceci n'est pas un ID valide`
+                        error: `[${!id.match(/([A-Z0-9]{6})/g) ? id : idPartner}] : Membre non trouvé`
                     })
-                }
-            } else {
-                resolve({
-                    completed: false,
-                    error: `[${!id.match(/([A-Z0-9]{6})/g) ? id : idPartner}] : Membre non trouvé`
-                })
 
-            }
-        });
-    }
+                }
+            });
+        }
+        // save() {
+        //     return new Promise(async resolve => {
+        //         let response = await fetch('./save', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify({
+        //                 token: localStorage.getItem('token'),
+        //                 tree: this.family
+        //             })
+        //         })
+        //         console.log(await response.json())
+        //     });
+        // }
 }

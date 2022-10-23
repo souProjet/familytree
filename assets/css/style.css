@@ -85,7 +85,6 @@ div.container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    text-transform: uppercase;
     cursor: text;
 }
 

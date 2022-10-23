@@ -1,1 +1,4 @@
 config.json
+/deno-version
+/userdata
+/node_modules

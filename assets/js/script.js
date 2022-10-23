@@ -252,10 +252,22 @@ function reComputeLink(){
 window.addEventListener('resize', reComputeLink);
 
 window.addEventListener('load', async() => {
+    // let userID = localStorage.getItem('token');
+    // if(userID){
+    //     let familytree = await (await fetch('./get/'+localStorage.getItem('token'))).json();
+    //     let buildReturnData = await member.build(familytree);
+    //     if(buildReturnData.completed){
+
+    //     }else{
+
+    //     }
+    // }else{
+    //     localStorage.setItem('token', utils.createID(10));
     let createMemberReturn = await member.createMember();
     if(createMemberReturn.completed){
         setTimeout(() => {
             addPartner(document.querySelector('#m-'+createMemberReturn.newmember.id));
         },200);
     }
+    //}
 })

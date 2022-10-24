@@ -41,8 +41,8 @@ async function memberClicked(e, memberHTML) {
         (document.querySelector('#l-' + memberHTML.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberHTML.id.split('-')[1])).style.backgroundColor = "#79a932";
     }
     memberHTML.innerHTML += `
-        <div class="context-menu hide" ${memberJSON.member.children.length ? `style="height:80px;"`:``}>
-            ${!memberJSON.member.children.length ? `<svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
+        <div class="context-menu hide" ${memberJSON.member.children.length || memberJSON.member.with ? `style="height:80px;"`:``}>
+            ${!memberJSON.member.children.length || !memberJSON.member.with ? `<svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
                 <g fill="red">
                     <path d="M336.559,68.611L231.016,174.165l105.543,105.549c15.699,15.705,15.699,41.145,0,56.85
                         c-7.844,7.844-18.128,11.769-28.407,11.769c-10.296,0-20.581-3.919-28.419-11.769L174.167,231.003L68.609,336.563
@@ -171,45 +171,47 @@ async function removeMember(memberHTML) {
     }, 40);
 }
 
-document.querySelector('.container').addEventListener('click', () => { removeMemberFocusElements() });
-
 async function addPartner(memberHTML){
     let memberHTMLId = memberHTML.id.split('-')[1];
     let createMemberReturn = await member.createMember(memberHTMLId);
     if(createMemberReturn.completed){
         let addPartnerReturn = await member.addPartner(memberHTMLId, createMemberReturn.newmember.id);
         if(addPartnerReturn.completed){
-            
-            let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
-            let boundingRectB = document.querySelector('#m-'+createMemberReturn.newmember.id).getBoundingClientRect();
-            let height = 13 - (createMemberReturn.newmember.depth > 0 ? (Math.log10(parseInt(createMemberReturn.newmember.depth) * (parseInt(createMemberReturn.newmember.depth) * 40))) : 0);
-            document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`
-                <span class="partner-link hide" id="l-${memberHTMLId}-${createMemberReturn.newmember.id}" style="height:${height}px;width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 502 502" style="enable-background:new 0 0 502 502;" xml:space="preserve" width="${height*3.5}px" height="${height*3.5}px">
-                        <g>
-                            <g>
-                                <path style="fill:#FF1D25;" d="M370.994,49.998c-61.509,0-112.296,45.894-119.994,105.306    c-7.698-59.412-58.485-105.306-119.994-105.306C64.176,49.998,10,104.174,10,171.004s80.283,135.528,116.45,166.574    C160.239,366.582,251,452.002,251,452.002s90.761-85.42,124.55-114.424C411.717,306.532,492,237.834,492,171.004    S437.824,49.998,370.994,49.998z"/>
-                                <path d="M251,462.002c-2.464,0-4.928-0.906-6.854-2.718c-0.906-0.853-90.981-85.595-124.21-114.119l-0.348-0.299    C80.771,311.548,0,242.216,0,171.004C0,98.767,58.769,39.998,131.006,39.998c52.959,0,99.547,31.914,119.994,78.382    c20.446-46.468,67.035-78.382,119.994-78.382C443.231,39.998,502,98.767,502,171.004c0,71.211-80.771,140.543-119.588,173.862    l-0.348,0.299c-33.231,28.525-123.304,113.266-124.21,114.119C255.928,461.096,253.464,462.002,251,462.002z M131.006,59.998    C69.797,59.998,20,109.795,20,171.004c0,62.021,78.917,129.761,112.615,158.687l0.348,0.299    c28.14,24.155,96.205,87.815,118.037,108.294c21.832-20.479,89.897-84.139,118.037-108.294l0.348-0.299    C403.083,300.765,482,233.025,482,171.004c0-61.209-49.797-111.006-111.006-111.006c-55.619,0-102.941,41.525-110.077,96.591    c-0.646,4.984-4.891,8.715-9.917,8.715s-9.271-3.73-9.917-8.715C233.948,101.523,186.625,59.998,131.006,59.998z"/>
-                            </g>
-                            <g>
-                                <path d="M252.008,412.021c-2.445,0-4.895-0.891-6.823-2.691c-26.934-25.15-75.469-70.218-97.909-89.48l-0.304-0.261    c-3.771-3.237-8.046-6.907-12.652-10.936c-4.157-3.636-4.58-9.954-0.943-14.11c3.635-4.158,9.953-4.58,14.11-0.943    c4.536,3.967,8.773,7.604,12.512,10.813l0.304,0.261c21.578,18.523,65.492,59.187,98.532,90.038    c4.037,3.77,4.253,10.097,0.484,14.134C257.35,410.955,254.682,412.021,252.008,412.021z"/>
-                            </g>
-                            <g>
-                                <path d="M113.283,285.803c-2.51,0-5.021-0.938-6.964-2.825c-6.611-6.417-12.866-12.804-18.592-18.982    c-3.754-4.05-3.514-10.377,0.537-14.132c4.05-3.754,10.377-3.514,14.132,0.537c5.488,5.921,11.495,12.053,17.854,18.227    c3.963,3.847,4.057,10.178,0.21,14.141C118.498,284.788,115.892,285.803,113.283,285.803z"/>
-                            </g>
-                        </g>
-                    </svg>
-                <span>`;
-            setTimeout(() => {
-                let partnerLink = document.querySelector('.partner-link.hide');
-                partnerLink.classList.remove('hide')
-                setTimeout(() => {
-                    partnerLink.style.transition= "none";
-                    reComputeLink();
-                }, 200);
-            }, 10);
+            createPartnerLink(memberHTMLId, createMemberReturn.newmember);
         }
     }
+}
+
+function createPartnerLink(memberHTMLId, partnerJSON){
+    let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
+    let boundingRectB = document.querySelector('#m-'+partnerJSON.id).getBoundingClientRect();
+
+    let height = 13 - (partnerJSON.depth > 0 ? (Math.log10(parseInt(partnerJSON.depth) * (parseInt(partnerJSON.depth) * 40))) : 0);
+    document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`
+        <span class="partner-link hide" id="l-${memberHTMLId}-${partnerJSON.id}" style="height:${height}px;width:${boundingRectB.x - boundingRectA.x}px; left:${boundingRectA.left+boundingRectA.width/(4/3)}px;">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" viewBox="0 0 502 502" style="enable-background:new 0 0 502 502;" xml:space="preserve" width="${height*3.5}px" height="${height*3.5}px">
+                <g>
+                    <g>
+                        <path style="fill:#FF1D25;" d="M370.994,49.998c-61.509,0-112.296,45.894-119.994,105.306    c-7.698-59.412-58.485-105.306-119.994-105.306C64.176,49.998,10,104.174,10,171.004s80.283,135.528,116.45,166.574    C160.239,366.582,251,452.002,251,452.002s90.761-85.42,124.55-114.424C411.717,306.532,492,237.834,492,171.004    S437.824,49.998,370.994,49.998z"/>
+                        <path d="M251,462.002c-2.464,0-4.928-0.906-6.854-2.718c-0.906-0.853-90.981-85.595-124.21-114.119l-0.348-0.299    C80.771,311.548,0,242.216,0,171.004C0,98.767,58.769,39.998,131.006,39.998c52.959,0,99.547,31.914,119.994,78.382    c20.446-46.468,67.035-78.382,119.994-78.382C443.231,39.998,502,98.767,502,171.004c0,71.211-80.771,140.543-119.588,173.862    l-0.348,0.299c-33.231,28.525-123.304,113.266-124.21,114.119C255.928,461.096,253.464,462.002,251,462.002z M131.006,59.998    C69.797,59.998,20,109.795,20,171.004c0,62.021,78.917,129.761,112.615,158.687l0.348,0.299    c28.14,24.155,96.205,87.815,118.037,108.294c21.832-20.479,89.897-84.139,118.037-108.294l0.348-0.299    C403.083,300.765,482,233.025,482,171.004c0-61.209-49.797-111.006-111.006-111.006c-55.619,0-102.941,41.525-110.077,96.591    c-0.646,4.984-4.891,8.715-9.917,8.715s-9.271-3.73-9.917-8.715C233.948,101.523,186.625,59.998,131.006,59.998z"/>
+                    </g>
+                    <g>
+                        <path d="M252.008,412.021c-2.445,0-4.895-0.891-6.823-2.691c-26.934-25.15-75.469-70.218-97.909-89.48l-0.304-0.261    c-3.771-3.237-8.046-6.907-12.652-10.936c-4.157-3.636-4.58-9.954-0.943-14.11c3.635-4.158,9.953-4.58,14.11-0.943    c4.536,3.967,8.773,7.604,12.512,10.813l0.304,0.261c21.578,18.523,65.492,59.187,98.532,90.038    c4.037,3.77,4.253,10.097,0.484,14.134C257.35,410.955,254.682,412.021,252.008,412.021z"/>
+                    </g>
+                    <g>
+                        <path d="M113.283,285.803c-2.51,0-5.021-0.938-6.964-2.825c-6.611-6.417-12.866-12.804-18.592-18.982    c-3.754-4.05-3.514-10.377,0.537-14.132c4.05-3.754,10.377-3.514,14.132,0.537c5.488,5.921,11.495,12.053,17.854,18.227    c3.963,3.847,4.057,10.178,0.21,14.141C118.498,284.788,115.892,285.803,113.283,285.803z"/>
+                    </g>
+                </g>
+            </svg>
+        <span>`;
+    setTimeout(() => {
+        let partnerLink = document.querySelector('.partner-link.hide');
+        partnerLink.classList.remove('hide')
+        setTimeout(() => {
+            partnerLink.style.transition= "none";
+            reComputeLink();
+        }, 200);
+    }, 10);
 }
 
 async function addChild(memberHTML){
@@ -218,15 +220,20 @@ async function addChild(memberHTML){
     if(memberJSON.completed){
         let createMemberReturn = await member.createMember(false, [memberJSON.member.id, memberJSON.member.with ? memberJSON.member.with : null]);
         if(createMemberReturn.completed){
-            let weight = 10 - Math.log10(parseInt(createMemberReturn.newmember.depth) * (parseInt(createMemberReturn.newmember.depth) * 20));
-            document.querySelector('#m-'+createMemberReturn.newmember.id).parentNode.innerHTML+=`
-            <svg class="child-link" depth="${createMemberReturn.newmember.depth}" id="l-${createMemberReturn.newmember.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
-                <path style="stroke-width: ${weight}px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="" />
-            </svg>
-            `;
-            reComputeLink();
+            createChildLink(memberHTMLId, createMemberReturn.newmember);
         }
     }
+}
+function createChildLink(memberHTMLId, childJSON){
+    let weight = 10 - Math.log10(parseInt(childJSON.depth) * (parseInt(childJSON.depth) * 20));
+    document.querySelector('#m-'+childJSON.id).parentNode.innerHTML+=`
+    <svg class="child-link" depth="${childJSON.depth}" id="l-${childJSON.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
+        <path style="stroke-width: ${weight}px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="" />
+    </svg>
+    `;
+    setTimeout(() => {
+        reComputeLink();
+    }, 200);
 }
 let uploadInput = document.querySelector('#upload');
 async function uploadPicture(memberHTML){
@@ -352,22 +359,17 @@ function download(){
 window.addEventListener('resize', reComputeLink);
 
 window.addEventListener('load', async() => {
-    // let userID = localStorage.getItem('token');
-    // if(userID){
-    //     let familytree = await (await fetch('./get/'+localStorage.getItem('token'))).json();
-    //     let buildReturnData = await member.build(familytree);
-    //     if(buildReturnData.completed){
-
-    //     }else{
-
-    //     }
-    // }else{
-    //     localStorage.setItem('token', utils.createID(10));
-    let createMemberReturn = await member.createMember();
-    if(createMemberReturn.completed){
-        setTimeout(() => {
-            addPartner(document.querySelector('#m-'+createMemberReturn.newmember.id));
-        },200);
+    let userID = localStorage.getItem('token');
+    if(userID){
+        let familytree = await (await fetch('./get/'+localStorage.getItem('token'))).json();
+        member.build(familytree);
+    }else{
+        localStorage.setItem('token', utils.createID(10));
+        let createMemberReturn = await member.createMember();
+        if(createMemberReturn.completed){
+            setTimeout(() => {
+                addPartner(document.querySelector('#m-'+createMemberReturn.newmember.id));
+            },200);
+        }
     }
-    //}
 })

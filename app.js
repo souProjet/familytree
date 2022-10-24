@@ -17,26 +17,26 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/template/index.html');
 });
 
-// app.post('/save', (req, res) => {
-//     let token = escapeHTML(req.body.token);
-//     let familytree = req.body.tree;
-//     if (token && familytree) {
-//         try {
-//             fs.writeFileSync(__dirname + '/userdata/tree/' + token + '.json', JSON.stringify(familytree));
-//             res.send(true);
-//         } catch (e) {
-//             res.send(false)
-//         }
-//     } else {
-//         res.send(false)
-//     }
-// });
-// app.get('/get/:token', (req, res) => {
-//     let token = escapeHTML(req.params.token);
-//     if (token) {
-//         res.send(JSON.parse(fs.readFileSync(__dirname + '/userdata/tree/' + token + '.json')));
-//     } else {
-//         res.send(false)
-//     }
-// })
+app.post('/save', (req, res) => {
+    let token = escapeHTML(req.body.token);
+    let familytree = req.body.tree;
+    if (token && familytree) {
+        try {
+            fs.writeFileSync(__dirname + '/userdata/tree/' + token + '.json', JSON.stringify(familytree));
+            res.send(true);
+        } catch (e) {
+            res.send(false)
+        }
+    } else {
+        res.send(false)
+    }
+});
+app.get('/get/:token', (req, res) => {
+    let token = escapeHTML(req.params.token);
+    if (token) {
+        res.send(JSON.parse(fs.readFileSync(__dirname + '/userdata/tree/' + token + '.json')));
+    } else {
+        res.send(false)
+    }
+})
 app.listen(port, () => console.log(`[F A M I L Y T R E E] listening on port ${port}!`));

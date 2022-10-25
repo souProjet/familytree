@@ -41,8 +41,8 @@ async function memberClicked(e, memberHTML) {
         (document.querySelector('#l-' + memberHTML.id.split('-')[1] + '-' + memberJSON.member.with) || document.querySelector('#l-' + memberJSON.member.with + '-' + memberHTML.id.split('-')[1])).style.backgroundColor = "#79a932";
     }
     memberHTML.innerHTML += `
-        <div class="context-menu hide" ${memberJSON.member.children.length || memberJSON.member.with ? `style="height:80px;"`:``}>
-            ${!memberJSON.member.children.length || !memberJSON.member.with ? `<svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
+        <div class="context-menu hide" ${memberJSON.member.children.length ? `style="height:80px;"`:``}>
+            ${!memberJSON.member.children.length ? `<svg onclick="removeMember(this.parentNode.parentNode)" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 348.333 348.334" style="enable-background:new 0 0 348.333 348.334;" xml:space="preserve">
                 <g fill="red">
                     <path d="M336.559,68.611L231.016,174.165l105.543,105.549c15.699,15.705,15.699,41.145,0,56.85
                         c-7.844,7.844-18.128,11.769-28.407,11.769c-10.296,0-20.581-3.919-28.419-11.769L174.167,231.003L68.609,336.563
@@ -162,11 +162,15 @@ async function removeMember(memberHTML) {
             (document.querySelector('#l-'+memberHTMLId+'-'+memberJSON.member.with) || document.querySelector('#l-'+memberJSON.member.with+'-'+memberHTMLId)).remove();
         }
     }
-    document.querySelector('[id^="l-'+memberHTMLId+'"]') ? document.querySelector('[id^="l-'+memberHTMLId+'"]').remove() : null;
 
     setTimeout(async() => {
-        await member.removeMember(memberHTMLId);
         memberHTML.remove();
+        await member.removeMember(memberHTMLId);
+        if(memberJSON.member.with && document.querySelector('[id^="l-'+memberHTMLId+'"]')){
+            document.querySelector('#m-'+memberJSON.member.with).remove();
+            await member.removeMember(memberJSON.member.with)
+        }
+        document.querySelector('[id^="l-'+memberHTMLId+'"]') ? document.querySelector('[id^="l-'+memberHTMLId+'"]').remove() : null;
         reComputeLink();
     }, 40);
 }
@@ -220,21 +224,14 @@ async function addChild(memberHTML){
     if(memberJSON.completed){
         let createMemberReturn = await member.createMember(false, [memberJSON.member.id, memberJSON.member.with ? memberJSON.member.with : null]);
         if(createMemberReturn.completed){
-            createChildLink(memberHTMLId, createMemberReturn.newmember);
+            let createChildLinkReturn = await member.createChildLink(memberHTMLId, createMemberReturn.newmember);
+            if(createChildLinkReturn.completed){
+                member.setOrder(document.querySelectorAll('.row')[memberJSON.member.depth])
+            }
         }
     }
 }
-function createChildLink(memberHTMLId, childJSON){
-    let weight = 10 - Math.log10(parseInt(childJSON.depth) * (parseInt(childJSON.depth) * 20));
-    document.querySelector('#m-'+childJSON.id).parentNode.innerHTML+=`
-    <svg class="child-link" depth="${childJSON.depth}" id="l-${childJSON.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
-        <path style="stroke-width: ${weight}px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="" />
-    </svg>
-    `;
-    setTimeout(() => {
-        reComputeLink();
-    }, 200);
-}
+
 let uploadInput = document.querySelector('#upload');
 async function uploadPicture(memberHTML){
     uploadInput.setAttribute('target', memberHTML.id)
@@ -265,6 +262,7 @@ async function switchGender(memberHTML){
         memberHTML.querySelector('img').src = `./images/${gender}Default.png`;
         setTimeout(() => {
             memberHTML.querySelector('img').classList.remove('switch');
+            member.switchGender(memberHTML.id.split('-')[1]);
         },200);
     },200);
 

@@ -38,7 +38,7 @@ class Member {
             if (children.length != 0) {
                 for (let i = 0; i < children.length; i++) {
                     let createChildReturn = await this.createMember(null, false, true, familytree.find(c => c.id == children[i]));
-                    createChildLink(memberJSON.id, familytree.find(c => c.id == children[i]))
+                    await this.createChildLink(memberJSON.id, familytree.find(c => c.id == children[i]))
                     if (createChildReturn.completed) {
                         this.buildingState();
                         if (familytree.find(c => c.id == children[i]).with) {
@@ -118,7 +118,6 @@ class Member {
                     }
                 }
             }
-
             let newMember = {
                 "id": memberID,
                 "name": null,
@@ -129,7 +128,7 @@ class Member {
                 "gender": isPartner ? (this.family.find(p => p.id == isPartner).gender == 'male' ? 'female' : 'male') : Math.floor(Math.random() * 2) ? 'male' : 'female',
                 "nationality": null,
                 "depth": depth,
-                "order": document.querySelectorAll('.row')[depth] ? document.querySelectorAll('.row')[depth].querySelectorAll('.member').length + 1 : 1
+                "order": null
             }
             if (member) {
                 newMember = member;
@@ -137,11 +136,8 @@ class Member {
 
             this.family.push(newMember);
 
-            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == newMember.id), isPartner, newMember.depth, parentsID ? parentsID[0] : null, newMember.order)
+            let createHTMLmemberReturn = await this.createHTMLmember(this.family.find(e => e.id == newMember.id), isPartner, newMember.depth, parentsID ? parentsID[0] : null, newMember.order, inBuilding)
             if (createHTMLmemberReturn.completed) {
-                if (!inBuilding) {
-                    this.save();
-                }
                 resolve({
                     completed: true,
                     family: this.family,
@@ -155,7 +151,7 @@ class Member {
             }
         });
     }
-    createHTMLmember(member, isPartner, depth, parentID, order) {
+    createHTMLmember(member, isPartner, depth, parentID, order, inBuilding) {
         return new Promise(async resolve => {
             try {
                 if (!document.querySelectorAll('.row')[depth]) {
@@ -170,7 +166,9 @@ class Member {
                     let memberDiv = document.createElement('div');
                     memberDiv.classList.add('member');
                     memberDiv.classList.add('hide');
-                    memberDiv.style.order = order;
+                    if (order) {
+                        memberDiv.style.order = order;
+                    }
                     if (depth) {
                         memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
                     }
@@ -186,28 +184,31 @@ class Member {
                         </p>`;
                     document.querySelector('#m-' + (member.with ? member.with : isPartner)).insertAdjacentElement('afterend', memberDiv)
                 } else {
-                    let afterWho = parentID ? (this.family.find(m => m.id == parentID).children.length > 2 ? this.family.find(m => m.id == parentID).children[this.family.find(m => m.id == parentID).children.length - 2] : null) : null
+                    let afterWho = parentID ? (this.family.find(m => m.id == parentID).children.length > 1 ? this.family.find(m => m.id == parentID).children[this.family.find(m => m.id == parentID).children.length - 2] : false) : false;
                     if (!afterWho) {
                         if (parentID) {
-                            let membersInRow = document.querySelector('#m-' + parentID).parentNode.querySelectorAll('.member');
+
+                            let membersInRow = Array.from(document.querySelector('#m-' + parentID).parentNode.querySelectorAll('.member')).filter(m => m.id != "m-" + this.family.find(m => m.id == parentID).with);
                             let nextMember = null;
-                            for (let n = 0; n < membersInRow.length; n++) {
-                                if (membersInRow[n].id == "m-" + parentID && (membersInRow[n + 1] ? (membersInRow[n + 1].id != "m-" + this.family.find(m => m.id == parentID).with) : false) && this.family.find(m => m.id == membersInRow[n + 1].id.split('-')[1]).children != 0) {
+                            for (let n = 0; n < membersInRow.length - 1; n++) {
+                                if (membersInRow[n].id == "m-" + parentID && this.family.find(m => m.id == membersInRow[n + 1].id.split('-')[1]).children != 0) {
                                     nextMember = membersInRow[n + 1];
                                 }
                             }
+
                             if (nextMember) {
                                 let nextMemberId = nextMember.id.split('-')[1];
                                 let memberDiv = document.createElement('div');
                                 memberDiv.classList.add('member');
                                 memberDiv.classList.add('hide');
-                                memberDiv.style.order = order;
+                                if (order) {
+                                    memberDiv.style.order = order;
+                                }
 
                                 if (depth) {
                                     memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
                                 }
                                 memberDiv.id = "m-" + member.id;
-
                                 memberDiv.innerHTML = `
                                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
                                         <img src="./images/${gender}Default.png" alt="Picture">
@@ -220,36 +221,60 @@ class Member {
                                 document.querySelector('#m-' + this.family.find(m => m.id == nextMemberId).children[0]).insertAdjacentElement('beforebegin', memberDiv)
 
                             } else {
-                                let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
-                                row.innerHTML += `
-                                    <div class="member hide" id="m-${member.id}" ${height}>
-                                        <div class="picture" onclick="memberClicked(event, this.parentNode);">
-                                            <img src="./images/${gender}Default.png" alt="Picture">
-                                        </div>
-                                        <p class="name">
-                                            <span class="hider-1"></span>
-                                            <span class="editable-name" contenteditable="true">${member.name ? member.name : (randomName.first + " " +randomName.last)}</span>
-                                            <span class="hider-2"></span></p>
-                                    </div>`;
-                            }
-                        } else {
-                            let height = depth ? `style="height:` + Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + `%;"` : ``
-                            row.innerHTML += `
-                                <div class="member hide" id="m-${member.id}" ${height}>
+                                let memberDiv = document.createElement('div');
+                                memberDiv.classList.add('member');
+                                memberDiv.classList.add('hide');
+
+                                if (order) {
+                                    memberDiv.style.order = order;
+                                }
+
+                                if (depth) {
+                                    memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
+                                }
+                                memberDiv.id = "m-" + member.id;
+                                memberDiv.innerHTML = `
                                     <div class="picture" onclick="memberClicked(event, this.parentNode);">
                                         <img src="./images/${gender}Default.png" alt="Picture">
                                     </div>
                                     <p class="name">
                                         <span class="hider-1"></span>
                                         <span class="editable-name" contenteditable="true">${member.name ? member.name : (randomName.first + " " +randomName.last)}</span>
-                                        <span class="hider-2"></span></p>
-                                </div>`;
+                                        <span class="hider-2"></span>
+                                    </p>`;
+                                row.innerHTML += memberDiv.outerHTML;
+                            }
+                        } else {
+                            let memberDiv = document.createElement('div');
+                            memberDiv.classList.add('member');
+                            memberDiv.classList.add('hide');
+                            if (order) {
+                                memberDiv.style.order = order;
+                            }
+
+                            if (depth) {
+                                memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
+                            }
+                            memberDiv.id = "m-" + member.id;
+                            memberDiv.innerHTML = `
+                                <div class="picture" onclick="memberClicked(event, this.parentNode);">
+                                    <img src="./images/${gender}Default.png" alt="Picture">
+                                </div>
+                                <p class="name">
+                                    <span class="hider-1"></span>
+                                    <span class="editable-name" contenteditable="true">${member.name ? member.name : (randomName.first + " " +randomName.last)}</span>
+                                    <span class="hider-2"></span>
+                                </p>`;
+
+                            row.innerHTML += memberDiv.outerHTML;
                         }
                     } else {
                         let memberDiv = document.createElement('div');
                         memberDiv.classList.add('member');
                         memberDiv.classList.add('hide');
-                        memberDiv.style.order = order;
+                        if (order) {
+                            memberDiv.style.order = order;
+                        }
 
                         if (depth) {
                             memberDiv.style.height = Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%";
@@ -264,7 +289,7 @@ class Member {
                                 <span class="editable-name" contenteditable="true">${member.name ? member.name : (randomName.first + " " +randomName.last)}</span>
                                 <span class="hider-2"></span>
                             </p>`;
-                        document.querySelector('#m-' + afterWho).insertAdjacentElement('afterend', memberDiv);
+                        document.querySelector('#m-' + (this.family.find(c => c.id == afterWho).with ? this.family.find(c => c.id == afterWho).with : afterWho)).insertAdjacentElement('afterend', memberDiv);
                     }
                 }
 
@@ -272,39 +297,66 @@ class Member {
                     row.querySelector('.member.hide').classList.remove('hide');
                     setTimeout(() => {
                         reComputeLink();
-                        this.setOrder(row);
+                        if (!inBuilding) {
+                            this.setOrder(row);
+                            this.save();
+                        }
                         this.editNameEvent();
+                        resolve({
+                            completed: true,
+                            family: this.family
+                        })
                     }, 100);
                 }, 30);
+
             } catch (err) {
+                console.log(err)
                 resolve({
                     completed: false,
                     error: err
                 });
             }
 
-            resolve({
-                completed: true,
-                family: this.family
-            })
+
+        });
+    }
+    createChildLink(memberHTMLId, childJSON) {
+        return new Promise(async resolve => {
+            let weight = 10 - Math.log10(parseInt(childJSON.depth) * (parseInt(childJSON.depth) * 20));
+            document.querySelector('#m-' + childJSON.id).parentNode.innerHTML += `
+                <svg class="child-link" depth="${childJSON.depth}" id="l-${childJSON.id}-${memberHTMLId}" xmlns="http://www.w3.org/2000/svg" style="position:absolute;display:block;" id="svg" viewBox="0 0 0 0" preserveAspectRatio="xMidYMid meet">
+                    <path style="stroke-width: ${weight}px;stroke: #bde582;stroke-linecap: round;fill: none;" id="curve" d="" />
+                </svg>
+                `;
+            setTimeout(() => {
+                reComputeLink();
+                // this.setOrder(document.querySelectorAll('.row')[childJSON.depth]);
+                // this.editNameEvent();
+                resolve({
+                    completed: true
+                })
+            }, 200);
         });
     }
     setOrder(raw) {
+
         let membersInRaw = raw.querySelectorAll('.member');
         for (let i = 0; i < membersInRaw.length; i++) {
             membersInRaw[i].style.order = i + 1;
-            this.family.find(m => m.id == membersInRaw[i].id.split('-')[1]).order = i + 1
+            this.family.find(m => m.id == membersInRaw[i].id.split('-')[1]).order = i + 1;
         }
     }
     removeMember(id) {
         return new Promise(async resolve => {
             if (id.match(/([A-Z0-9]{6})/g)) {
                 if (this.family.find(member => member.id == id)) {
+                    this.setOrder(document.querySelectorAll('.row')[this.family.find(member => member.id == id).depth]);
                     this.family = this.family.filter(member => member.id != id)
                     for (let i = 0; i < this.family.length; i++) {
                         this.family[i].children = this.family[i].children.filter(child => child != id);
                     }
                     this.save();
+                    this.editNameEvent();
                     resolve({
                         completed: true,
                         family: this.family
@@ -417,6 +469,10 @@ class Member {
     }
     editName(id, newname) {
         this.family.find(m => m.id == id).name = newname;
+        this.save();
+    }
+    switchGender(id) {
+        this.family.find(m => m.id == id).gender = this.family.find(m => m.id == id).gender == 'male' ? 'female' : 'male';
         this.save();
     }
     save() {

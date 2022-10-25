@@ -188,7 +188,9 @@ async function addPartner(memberHTML){
 
 function createPartnerLink(memberHTMLId, partnerJSON){
     let boundingRectA = document.querySelector('#m-'+memberHTMLId).getBoundingClientRect();
+    Object.keys(boundingRectA).forEach(key => boundingRectA[key] = Math.floor(boundingRectA[key]))
     let boundingRectB = document.querySelector('#m-'+partnerJSON.id).getBoundingClientRect();
+    Object.keys(boundingRectB).forEach(key => boundingRectB[key] = Math.floor(boundingRectB[key]))
 
     let height = 13 - (partnerJSON.depth > 0 ? (Math.log10(parseInt(partnerJSON.depth) * (parseInt(partnerJSON.depth) * 40))) : 0);
     document.querySelector('#m-'+memberHTMLId).parentNode.innerHTML+=`
@@ -273,24 +275,30 @@ function reComputeLink(){
         let id = link.id.split("-")[1];
         let parnerId = link.id.split("-")[2];
         let boundingRectA = document.querySelector('#m-'+id).getBoundingClientRect();
+        Object.keys(boundingRectA).forEach(key => boundingRectA[key] = Math.floor(boundingRectA[key]))
         let boundingRectB = document.querySelector('#m-'+parnerId).getBoundingClientRect();
+        Object.keys(boundingRectB).forEach(key => boundingRectB[key] = Math.floor(boundingRectB[key]))
         link.style.width = (boundingRectB.x - boundingRectA.x)+ "px";
         link.style.left = boundingRectA.left+boundingRectA.width/2 +"px";
+        link.style.top = boundingRectA.top + boundingRectA.height/2+"px";
     }); 
 
     document.querySelectorAll('.child-link').forEach(link => {
-        let childElement = document.querySelector('#m-'+link.id.split('-')[1]);
-        let parentElement = document.querySelector('#m-'+link.id.split("-")[2]);
+        let childElement = document.querySelector('#m-'+link.id.split('-')[1]).getBoundingClientRect();
+        Object.keys(childElement).forEach(key => childElement[key] = Math.floor(childElement[key]))
+        let parentElement = document.querySelector('#m-'+link.id.split("-")[2]).getBoundingClientRect();
+        Object.keys(parentElement).forEach(key => parentElement[key] = Math.floor(parentElement[key]))
+
         let weight = 10 - Math.log10(parseInt(link.getAttribute("depth")) * (parseInt(link.getAttribute("depth")) * 20));
         let partnerLinkHtml = document.querySelector('.partner-link[id*="'+link.id.split('-')[2]+'"]');
         let partnerSide = partnerLinkHtml ? (partnerLinkHtml.id.split('-')[1] == link.id.split('-')[2] ? 0 : 1) : null;
-        let startingPointLeft = parentElement.offsetLeft + (partnerLinkHtml ? partnerLinkHtml.offsetWidth/2 : 0) * (partnerSide ? -1 : 1);
-        let startingPointTop = parentElement.offsetTop + parentElement.offsetHeight / (partnerLinkHtml ? 2 : 1) + (partnerLinkHtml ? weight : 0);
-        if(startingPointLeft < childElement.offsetLeft){
-            let left = Math.floor(startingPointLeft + (parentElement.offsetWidth/2))-weight;
+        let startingPointLeft = parentElement.left + (partnerLinkHtml ? Math.floor(partnerLinkHtml.getBoundingClientRect().width)/2 : 0) * (partnerSide ? -1 : 1);
+        let startingPointTop = parentElement.top + parentElement.height / (partnerLinkHtml ? 2 : 1) + (partnerLinkHtml ? weight : 0);
+        if(startingPointLeft < childElement.left){
+            let left = Math.floor(startingPointLeft + (parentElement.width/2))-weight;
             let top = Math.floor(startingPointTop)-weight*1.5;
-            let height = Math.floor(childElement.offsetTop - top)+weight;
-            let width = Math.floor((childElement.offsetLeft + (childElement.offsetWidth/2) - left))+weight;
+            let height = Math.floor(childElement.top - top)+weight;
+            let width = Math.floor((childElement.left + (childElement.width/2) - left))+weight;
             link.style.width = width+"px";
             link.style.left = left+"px";
             link.style.top = top+"px";
@@ -298,14 +306,15 @@ function reComputeLink(){
             link.setAttribute('viewBox', `0 0 ${width} ${height}`);
             link.querySelector('path').setAttribute('d', `M${width-1-weight},${height-1} C${width-1},${partnerLinkHtml ? height/2 : 0} 0,${height-1} ${weight},0`)
         }else{
-            let left = Math.floor(childElement.offsetLeft + (childElement.offsetWidth/2))-weight;
+            let left = Math.floor(childElement.left + (childElement.width/2))-weight;
             let top = Math.floor(startingPointTop)-weight*1.5;
-            let height = Math.floor(childElement.offsetTop - top)+weight;
-            let width = Math.floor(startingPointLeft - childElement.offsetLeft)+weight
+            let height = Math.floor(childElement.top - top)+weight;
+            let width = Math.floor(startingPointLeft - childElement.left)+weight
             link.style.width = width+2*weight+"px";
             link.style.left = left+"px";
             link.style.top = top+"px";
             link.style.height = height+"px";
+
             link.setAttribute('viewBox', `0 0 ${width} ${height}`);
             link.querySelector('path').setAttribute('d', `M0,${height-1} C0,${partnerLinkHtml ? height/2 : 0} ${width-1},${height-1} ${width-1+weight},0`)
         }

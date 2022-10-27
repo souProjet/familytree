@@ -1,42 +1,30 @@
-const express = require('express');
-const fs = require('fs');
+//#############################################################################################################################
+//                                               IMPORTATION DES DÉPENDANCES ET CONFIGURATION DES MODULES
+//#############################################################################################################################
+const express = require('express'); //framework pour construire des applications web
+const fileupload = require('express-fileupload'); //middleware express pour gérer l'upload de fichier (upload des photos dans notre cas)
+const { Server } = require('socket.io'); //framework de gestion des websocket
+const bodyParser = require('body-parser'); //middleware pour parser le body des requêtes HTTP
+const http = require('http');
+const fs = require('fs'); //module de gestion du system de fichier (pour l'upload entre autre)
 const app = express();
-const bodyParser = require('body-parser');
+const server = http.createServer(app);
+const io = new Server(server);
+const APP_NAME = "familytree";
+const HOME = process.argv.includes('--dev') ? './' : process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + `/.${APP_NAME}_data`;
+const config = require(HOME + '/config.json') // fichier contenant le port d'écoute du server web ainsi que le lien du webhook discord
 
-const port = 5000;
-
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ limit: '25mb' }));
-app.use(express.static('assets'));
-app.use(bodyParser.urlencoded({ extended: true }));
+//#############################################################################################################################
+//                                               CONFIGURATION DU SERVEUR WEB
+//#############################################################################################################################
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileupload());
+app.use('/public', express.static(__dirname + '/asset'));
 
-escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/template/index.html');
+//#############################################################################################################################
+//                                               LANCEMENT DU SERVEUR WEB
+//#############################################################################################################################
+server.listen(config.port, () => {
+    console.log(`[ ${Array.from(APP_NAME.toUpperCase()).join(' ')} ] Le serveur est lancé sur le port ${config.port}`);
 });
-
-app.post('/save', (req, res) => {
-    let token = escapeHTML(req.body.token);
-    let familytree = req.body.tree;
-    if (token && familytree) {
-        try {
-            fs.writeFileSync(__dirname + '/userdata/tree/' + token + '.json', JSON.stringify(familytree));
-            res.send(true);
-        } catch (e) {
-            res.send(false)
-        }
-    } else {
-        res.send(false)
-    }
-});
-app.get('/get/:token', (req, res) => {
-    let token = escapeHTML(req.params.token);
-    if (token) {
-        res.send(JSON.parse(fs.readFileSync(__dirname + '/userdata/tree/' + token + '.json')));
-    } else {
-        res.send(false)
-    }
-})
-app.listen(port, () => console.log(`[F A M I L Y T R E E] listening on port ${port}!`));

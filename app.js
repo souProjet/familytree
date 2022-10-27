@@ -20,7 +20,16 @@ const config = require(HOME + '/config.json') // fichier contenant le port d'éc
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(fileupload());
-app.use('/public', express.static(__dirname + '/asset'));
+app.use('/public', express.static(__dirname + '/assets'));
+
+
+//#############################################################################################################################
+//                                               ROUTES
+//#############################################################################################################################
+//requêtes GET sur la racine du site
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/template/index.html');
+});
 
 //#############################################################################################################################
 //                                               LANCEMENT DU SERVEUR WEB

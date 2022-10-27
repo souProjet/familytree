@@ -1,8 +1,13 @@
 class Data {
     constructor() {
         this.family = [];
+        this.token = localStorage.getItem('token')
+        if (!this.token) {
+            this.token = this.createID(10);
+            localStorage.setItem('token', token)
+        }
     }
-    createID = (length = 6) => {
+    createID(length = 6) {
         let token = '';
         let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         for (let i = 0; i < length; i++) {
@@ -10,12 +15,13 @@ class Data {
         }
         return token;
     }
-    createMember = async(parentsID = [], inCoupleWith = null) => {
+    async createMember(parentsID = [], inCoupleWith = null) {
         let newMemberID = this.createID();
         this.family.filter(member => parentsID.indexOf(member.id) != -1).forEach(member => member.children.push(newMemberID));
 
         let depth = 0;
         if (inCoupleWith) {
+            this.family.find(member => member.id == inCoupleWith).with = newMemberID;
             depth = this.family.find(p => p.id == inCoupleWith).depth;
         } else {
             let acc = newMemberID
@@ -34,6 +40,7 @@ class Data {
         let age = (await fetch(`https://api.agify.io?name=${name}&country_id=${nationality}`).then(res => res.json())).age || Math.floor(Math.random() * 70 - 10) + 10;
         let birthday = new Date(Math.random() * (new Date('01-01-' + ((new Date()).getUTCFullYear() - age)).getTime() - new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()) + new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()).toLocaleDateString();
         let height = depth ? Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%" : "80%";
+
         this.family.push({
             "id": newMemberID,
             "name": name,
@@ -48,9 +55,11 @@ class Data {
             "height": height,
             "top": undefined,
             "left": undefined
-        })
+        });
     }
     editMember = (id, key, newValue) => { this.family.find(member => member.id == id)[key] = newValue; }
     removeMember = (id) => { this.family.filter(member => member.id != id); }
     escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }
+    save = async(method, id = null, key = null, newValue = null) => { return method ? (await fetch('./api/save', { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, method: "POST", body: JSON.stringify({ method: method, id: id, key: key, newvalue: newValue }) }).then(res => res.json())) : { completed: false, message: 'No method was specified' } }
+
 }

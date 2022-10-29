@@ -44,28 +44,42 @@ app.get('/', (req, res) => {
 });
 
 //#############################################################################################################################
-//                                               ROUTES DE L'API
+//                                               ROUTES DE L'API EN POST
 //#############################################################################################################################
-//requêtes en POST sur l'API
 app.post('/api/:action', async(req, res) => {
     let action = req.params.action
     let token = req.headers.authorization.split(' ')[1]
 
-    if (token) {
+    if (!token) {
         res.status(200).send({
             completed: false,
             message: 'not authorized'
         });
     } else {
+        //#############################################################################################################################
+        //                                               ACTION "SAVE"
+        //#############################################################################################################################
         if (action == 'save') {
             let method = escapeHTML(req.body.method);
+            //#############################################################################################################################
+            //                                                  METHOD "ADD"
+            //#############################################################################################################################
             if (method == 'add') {
                 let object = req.body.key;
                 for (let key in object) {
-                    object[key] = escapeHTML(object[key])
+                    if (typeof object[key] == 'string') {
+                        object[key] = escapeHTML(object[key])
+                    }
                 }
                 try {
-                    fs.writeFileSync(HOME + '/data/tree/' + token + '.json', JSON.stringify(JSON.parse(fs.readFileSync(HOME + '/data/tree/' + token + '.json')).push(object)));
+                    let fileExists = fs.existsSync(HOME + 'data/tree/' + token + '.json');
+                    if (!fileExists) {
+                        fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify([object]));
+                    } else {
+                        let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'));
+                        lastVersion.push(object)
+                        fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(lastVersion));
+                    }
                     res.status(200).send({
                         completed: true,
                         message: 'successful addition'
@@ -77,12 +91,20 @@ app.post('/api/:action', async(req, res) => {
                         message: 'addition failed'
                     })
                 }
+                //#############################################################################################################################
+                //                                                  METHOD "EDIT"
+                //#############################################################################################################################
             } else if (method == 'edit') {
                 let id = escapeHTML(req.body.id);
                 let key = escapeHTML(req.body.key);
                 let newValue = escapeHTML(req.body.newvalue);
                 try {
-                    fs.writeFileSync(HOME + '/data/tree/' + token + '.json', JSON.stringify(JSON.parse(fs.readFileSync(HOME + '/data/tree/' + token + '.json')).find(member => member.id == id)[key] = newValue));
+                    let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'))
+                    let editPart = lastVersion.find(member => member.id == id)
+                    let index = lastVersion.indexOf(editPart);
+                    editPart[key] = newValue
+                    lastVersion[index] = editPart;
+                    fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(lastVersion));
                     res.status(200).send({
                         completed: true,
                         message: 'successful edition'
@@ -94,10 +116,15 @@ app.post('/api/:action', async(req, res) => {
                         message: 'edit failed'
                     })
                 }
+                //#############################################################################################################################
+                //                                                  METHOD "DELETE"
+                //#############################################################################################################################
             } else if (method == 'del') {
                 let id = escapeHTML(req.body.id);
                 try {
-                    fs.writeFileSync(HOME + '/data/tree/' + token + '.json', JSON.stringify(JSON.parse(fs.readFileSync(HOME + '/data/tree/' + token + '.json')).filter(member => member.id != id)));
+                    let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'));
+                    lastVersion = lastVersion.filter(member => member.id != id);
+                    fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(lastVersion));
                     res.status(200).send({
                         completed: true,
                         message: 'successful delete'
@@ -113,6 +140,45 @@ app.post('/api/:action', async(req, res) => {
                 res.status(200).send({
                     completed: false,
                     message: 'Unknown method'
+                })
+            }
+        } else {
+            res.status(200).send({
+                completed: false,
+                message: 'unknown action'
+            })
+        }
+    }
+});
+
+//#############################################################################################################################
+//                                               ROUTES DE L'API EN GET
+//#############################################################################################################################
+app.get('/api/:action', async(req, res) => {
+    let action = req.params.action
+    let token = req.headers.authorization.split(' ')[1]
+
+    if (!token) {
+        res.status(200).send({
+            completed: false,
+            message: 'not authorized'
+        });
+    } else {
+        //#############################################################################################################################
+        //                                               ACTION "GET"
+        //#############################################################################################################################
+        if (action == 'get') {
+            try {
+                res.status(200).send({
+                    completed: true,
+                    message: 'successful recovery',
+                    familytree: JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'))
+                })
+            } catch (e) {
+                console.log(e)
+                res.status(200).send({
+                    completed: false,
+                    message: 'recovery failed'
                 })
             }
         } else {

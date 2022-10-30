@@ -123,8 +123,10 @@ app.post('/api/:action', async(req, res) => {
                 let id = escapeHTML(req.body.id);
                 try {
                     let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'));
-                    lastVersion = lastVersion.filter(member => member.id != id);
-                    fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(lastVersion));
+                    if (lastVersion.find(member => member.id == id).with) { lastVersion.find(partner => partner.with == id).with = null; }
+                    let newVersion = lastVersion.filter(member => member.id != id);
+
+                    fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(newVersion));
                     res.status(200).send({
                         completed: true,
                         message: 'successful delete'

@@ -60,7 +60,7 @@ class Data {
         let birthday = new Date(Math.random() * (new Date('01-01-' + ((new Date()).getUTCFullYear() - age)).getTime() - new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()) + new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()).toLocaleDateString();
 
         let height = depth ? Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%" : "80%";
-
+        let heightInPx = 250 * (parseInt(height.split('%')[0]) / 100);
         let newMember = {
             "id": newMemberID,
             "name": name,
@@ -73,8 +73,8 @@ class Data {
             "nationality": nationality,
             "depth": depth,
             "height": height,
-            "top": 0,
-            "left": 0
+            "top": heightInPx * depth,
+            "left": this.family.filter(member => member.depth == depth).length * 500
         }
         this.family.push(newMember);
 
@@ -86,8 +86,11 @@ class Data {
         this.family.find(member => member.id == id)[key] = newValue;
         this.save('edit', id, key, newValue);
     }
-    removeMember = (id) => {
-        this.family.filter(member => member.id != id);
+    removeMember(id) {
+        let lastVersion = this.family;
+        if (lastVersion.find(member => member.id == id).with) { lastVersion.find(partner => partner.with == id).with = null; }
+        let newVersion = lastVersion.filter(member => member.id != id);
+        this.family = newVersion;
         this.save('del', id);
     }
     escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }

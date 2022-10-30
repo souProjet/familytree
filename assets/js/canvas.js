@@ -7,10 +7,40 @@ class Canvas {
         this.canvas.width = this.width;
         this.ctx = canvas.getContext('2d');
         this.canvas.addEventListener('mousemove', this.mouseMove);
-        this.canvas.addEventListener('click', this.click)
+        this.canvas.addEventListener('click', this.click);
+        this.clickedMember = null;
+        this.contextMenu = document.querySelector('.context-menu');
+    }
+    toogleContextMenu(state = true, left, top, inCouple = false, haveChild = false) {
+        if (state) {
+            this.contextMenu.style.left = left + "px";
+            this.contextMenu.style.top = top + "px";
+            if (inCouple) {
+                this.contextMenu.querySelector('.add-partner').style.display = "none";
+                this.contextMenu.querySelector('.add-child').style.display = "none";
+            }
+            if (haveChild) { this.contextMenu.querySelector('.remove-member').style.display = "none"; }
+            if (inCouple || haveChild) {
+                this.contextMenu.style.height = "40px";
+            }
+            this.contextMenu.style.zIndex = "50";
+            this.contextMenu.classList.remove('hide');
+        } else {
+            this.contextMenu.classList.add('hide');
+            setTimeout(() => {
+                this.contextMenu.style.zIndex = "-1";
+            });
+            this.contextMenu.querySelector('.add-partner').style.display = "block";
+            this.contextMenu.querySelector('.add-child').style.display = "block";
+            this.contextMenu.querySelector('.remove-member').style.display = "block";
+            this.contextMenu.style.height = "120px";
+        }
+    }
+    clearAll() {
+        this.ctx.clearRect(0, 0, this.width, this.height)
     }
     build(familytree) {
-
+        this.clearAll();
         this.setMember(familytree[0])
         if (familytree[0].with) {
             this.setMember(familytree.find(partner => partner.id == familytree[0].with), true);
@@ -33,9 +63,7 @@ class Canvas {
             }
         }
     }
-    clearAll() {
-        this.ctx.clearRect(0, 0, this.size.width, this.size.height)
-    }
+
     mouseMove(event) {
         let left = event.offsetX;
         let top = event.offsetY;
@@ -54,12 +82,21 @@ class Canvas {
     click(event) {
         let left = event.offsetX;
         let top = event.offsetY;
+        let memberIsFind = false;
         data.family.forEach(member => {
             let heightInPx = 250 * (parseInt(member.height.split('%')[0]) / 100);
             if (left >= member.left && left <= member.left + heightInPx && top >= member.top && top <= member.top + heightInPx) {
-                console.log(member)
+                canvas.clickedMember = member.id;
+                memberIsFind = true;
+                if (!member.with || !member.children.length) {
+                    canvas.toogleContextMenu(true, member.left + heightInPx, member.top, member.with ? true : false, member.children.length ? true : false)
+                }
             }
         });
+        if (!memberIsFind) {
+            canvas.clickedMember = null;
+            canvas.toogleContextMenu(false);
+        }
     }
     setMember(member, isPartner = false) {
         let ctx = this.ctx
@@ -100,7 +137,8 @@ class Canvas {
             ctx.lineTo(left, top + (heightInPx - 30 - borderWeight - 10))
             ctx.closePath()
             ctx.fill()
-                //texte
+
+            //texte
             ctx.font = "20px serif"
             ctx.fillStyle = "white"
             let nameWidth = ctx.measureText(member.name).width;
@@ -177,4 +215,19 @@ class Canvas {
 
     }
 
+    async removeMember() {
+        let memberID = this.clickedMember;
+        data.removeMember(memberID);
+        this.toogleContextMenu(false)
+        this.build(data.family)
+    }
+
+    async addPartner() {
+        let memberID = this.clickedMember;
+        let newMemberReturn = await data.createMember([], memberID);
+        if (newMemberReturn) {
+            this.toogleContextMenu(false)
+            this.build(data.family)
+        }
+    }
 }

@@ -18,11 +18,11 @@ canvas#app {
     background-image: linear-gradient(to right, #00b3db54, #0084b05b);
 }
 
-.container .row .member .context-menu {
+.context-menu {
+    z-index: -1;
+    cursor: pointer;
     position: absolute;
     z-index: 15;
-    right: -40px;
-    top: 0;
     width: 40px;
     height: 120px;
     background-color: white;
@@ -37,47 +37,38 @@ canvas#app {
     transition: all .2s cubic-bezier(0, .8, .35, 1.35);
 }
 
-.container .row .member .context-menu svg,
-.container .row .member .add-partner {
+.context-menu svg {
     transform: scale(1);
     transition: all .2s ease;
 }
 
-.container .row .member .context-menu svg:hover,
-.container .row .member .add-partner:hover {
+.context-menu svg:hover {
     transform: scale(1.1);
     transition: all .2s ease;
 }
 
-.container .row .member .context-menu.hide,
-.container .row .member .add-partner.hide {
+.context-menu.hide {
     opacity: 0;
     transform: translateX(-50px);
     transition: all .2s cubic-bezier(0, .8, .35, 1.35);
 }
 
-.container .row .member .add-child.hide,
+
+/* 
+.add-child.hide,
 .container .row .partner-link .add-child.hide {
     display: none;
     opacity: 0;
     transform: translate(-50%, -50px) !important;
 }
 
-.container .row .member .add-partner {
-    z-index: 15;
-    position: absolute;
-    right: -25px;
-    top: 95%;
-    filter: drop-shadow( 2px 2px 3px rgba(0, 0, 0, 0.4));
-}
-
-.container .row .member .add-child:hover,
+.add-child:hover,
 .container .row .partner-link .add-child:hover {
     transform: translate(-50%, 0) scale(1.1);
     transition: all .2s ease;
 }
 
-.container .row .member .add-child,
+.add-child,
 .container .row .partner-link .add-child {
     display: block;
     opacity: 1;
@@ -111,7 +102,7 @@ canvas#app {
 .container .row .partner-link.hide {
     opacity: 0;
     transition: all .2s cubic-bezier(.76, .46, .62, 1.13);
-}
+} */
 
 .wrapper-button {
     position: absolute;

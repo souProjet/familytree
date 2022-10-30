@@ -15,13 +15,18 @@ class Canvas {
         if (state) {
             this.contextMenu.style.left = left + "px";
             this.contextMenu.style.top = top + "px";
-            if (inCouple) {
+            if (!inCouple && !haveChild) {
+                this.contextMenu.style.height = "120px";
+                this.contextMenu.querySelector('.remove-member').style.display = "block";
+                this.contextMenu.querySelector('.add-partner').style.display = "block";
+            } else if (inCouple && !haveChild) {
+                this.contextMenu.style.height = "80px";
+                this.contextMenu.querySelector('.remove-member').style.display = "block";
                 this.contextMenu.querySelector('.add-partner').style.display = "none";
-                this.contextMenu.querySelector('.add-child').style.display = "none";
-            }
-            if (haveChild) { this.contextMenu.querySelector('.remove-member').style.display = "none"; }
-            if (inCouple || haveChild) {
+            } else if (inCouple && haveChild) {
                 this.contextMenu.style.height = "40px";
+                this.contextMenu.querySelector('.remove-member').style.display = "none";
+                this.contextMenu.querySelector('.add-partner').style.display = "none";
             }
             this.contextMenu.style.zIndex = "50";
             this.contextMenu.classList.remove('hide');
@@ -29,11 +34,8 @@ class Canvas {
             this.contextMenu.classList.add('hide');
             setTimeout(() => {
                 this.contextMenu.style.zIndex = "-1";
-            });
-            this.contextMenu.querySelector('.add-partner').style.display = "block";
-            this.contextMenu.querySelector('.add-child').style.display = "block";
-            this.contextMenu.querySelector('.remove-member').style.display = "block";
-            this.contextMenu.style.height = "120px";
+                this.contextMenu.style.height = "120px";
+            }, 200);
         }
     }
     clearAll() {
@@ -42,6 +44,8 @@ class Canvas {
     build(familytree) {
         this.clearAll();
         this.setMember(familytree[0])
+        let self = this;
+
         if (familytree[0].with) {
             this.setMember(familytree.find(partner => partner.id == familytree[0].with), true);
         }
@@ -52,9 +56,9 @@ class Canvas {
             if (children.length) {
                 for (let i = 0; i < children.length; i++) {
                     let actualChild = familytree.find(child => child.id == children[i]);
-                    this.setMember(actualChild);
+                    self.setMember(actualChild);
                     if (actualChild.with) {
-                        this.setMember(familytree.find(partner => partner.id == actualChild.with), true);
+                        self.setMember(familytree.find(partner => partner.id == actualChild.with), true);
                         if (actualChild.children.length) {
                             buildingProcess(familytree, actualChild)
                         }
@@ -88,9 +92,7 @@ class Canvas {
             if (left >= member.left && left <= member.left + heightInPx && top >= member.top && top <= member.top + heightInPx) {
                 canvas.clickedMember = member.id;
                 memberIsFind = true;
-                if (!member.with || !member.children.length) {
-                    canvas.toogleContextMenu(true, member.left + heightInPx, member.top, member.with ? true : false, member.children.length ? true : false)
-                }
+                canvas.toogleContextMenu(true, member.left + heightInPx, member.top, member.with ? true : false, member.children.length ? true : false)
             }
         });
         if (!memberIsFind) {
@@ -152,12 +154,13 @@ class Canvas {
                 let linkWidth = left - linkLeft
                 this.setLink(linkLeft, linkTop, linkWidth, linkHeight)
             }
+            //let parents = data.family.
         }
     }
     setLink(left, top, width, height, isCurve = false) {
         let ctx = this.ctx;
         if (isCurve) {
-
+            console.log(left, top, width, height)
         } else {
             //draw line
             ctx.fillStyle = "#bde582";
@@ -215,7 +218,7 @@ class Canvas {
 
     }
 
-    async removeMember() {
+    removeMember() {
         let memberID = this.clickedMember;
         data.removeMember(memberID);
         this.toogleContextMenu(false)
@@ -227,6 +230,17 @@ class Canvas {
         let newMemberReturn = await data.createMember([], memberID);
         if (newMemberReturn) {
             this.toogleContextMenu(false)
+            this.build(data.family)
+        }
+    }
+
+    async addChild() {
+        let memberID = this.clickedMember;
+        let parents = [memberID];
+        if (data.family.find(partner => partner.id == memberID).with) { parents.push(data.family.find(partner => partner.id == memberID).with) }
+        let newMemberReturn = await data.createMember(parents);
+        if (newMemberReturn) {
+            this.toogleContextMenu(false);
             this.build(data.family)
         }
     }

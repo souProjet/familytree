@@ -31,8 +31,7 @@ class Data {
     }
     async createMember(parentsID = [], inCoupleWith = null) {
         let newMemberID = this.createID();
-        this.family.filter(member => parentsID.indexOf(member.id) != -1).forEach(member => member.children.push(newMemberID));
-
+        parentsID.forEach(parentID => this.family.find(parent => parent.id == parentID).children.push(newMemberID))
         let depth = 0;
         if (inCoupleWith) {
             this.family.find(member => member.id == inCoupleWith).with = newMemberID;
@@ -61,6 +60,11 @@ class Data {
 
         let height = depth ? Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%" : "80%";
         let heightInPx = 250 * (parseInt(height.split('%')[0]) / 100);
+
+        let top = heightInPx * depth + 100;
+
+        let left = this.family.filter(member => member.depth == depth).length * 500
+
         let newMember = {
             "id": newMemberID,
             "name": name,
@@ -73,12 +77,12 @@ class Data {
             "nationality": nationality,
             "depth": depth,
             "height": height,
-            "top": heightInPx * depth,
-            "left": this.family.filter(member => member.depth == depth).length * 500
+            "top": top,
+            "left": left
         }
         this.family.push(newMember);
 
-        this.save('add', null, newMember);
+        this.save('add', null, newMember, parentsID);
 
         return newMember;
     }

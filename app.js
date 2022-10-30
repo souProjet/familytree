@@ -66,6 +66,7 @@ app.post('/api/:action', async(req, res) => {
             //#############################################################################################################################
             if (method == 'add') {
                 let object = req.body.key;
+                let parentsID = req.body.newvalue;
                 for (let key in object) {
                     if (typeof object[key] == 'string') {
                         object[key] = escapeHTML(object[key])
@@ -76,8 +77,10 @@ app.post('/api/:action', async(req, res) => {
                     if (!fileExists) {
                         fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify([object]));
                     } else {
+
                         let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'));
                         lastVersion.push(object)
+                        parentsID.forEach(parentID => lastVersion.find(parent => parent.id == parentID).children.push(escapeHTML(object.id)));
                         fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(lastVersion));
                     }
                     res.status(200).send({

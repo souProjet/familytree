@@ -98,9 +98,38 @@ class Data {
     removeMember(id) {
         let lastVersion = this.family;
         if (lastVersion.find(member => member.id == id).with) { lastVersion.find(partner => partner.with == id).with = null; }
+        for (let i = 0; i < lastVersion.length; i++) {
+            lastVersion[i].children = lastVersion[i].children.filter(child => child != id);
+        }
         let newVersion = lastVersion.filter(member => member.id != id);
         this.family = newVersion;
         this.save('del', id);
+    }
+    adjustPositioning() {
+        let maxDepth = 0;
+        this.family.forEach(member => member.depth > maxDepth ? maxDepth++ : null);
+        for (let i = 0; i <= maxDepth; i++) {
+            let actualDepthData = this.family.filter(member => member.depth == i);
+            let actualDepthDataWithoutCouple;
+            if (i) {
+                actualDepthDataWithoutCouple = actualDepthData.filter(member => this.family.find(parent => parent.children.indexOf(member.id) != -1))
+            } else {
+                actualDepthDataWithoutCouple = [actualDepthData[0]]
+            }
+
+            for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
+                // let lastLeft = i * 500;
+                // let newFamilyTree = this.family;
+                //this.family.forEach(member => member.left > lastLeft && member.depth == i ? lastLeft = member.left : null);
+                // newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[i].id).left = lastLeft;
+                // if (actualDepthDataWithoutCouple[i].with) {
+                //     newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[i].with).left = this.family.find(member => member.id == actualDepthDataWithoutCouple[i].id).left + 500;
+                // }
+                // this.family = newFamilyTree
+            }
+        }
+        canvas.build(this.family)
+
     }
     escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }
     save = async(method, id = null, key = null, newValue = null) => { return (method ? (await fetch('./api/save', { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, method: "POST", body: JSON.stringify({ method: method, id: id, key: key, newvalue: newValue }) }).then(res => res.json())) : { completed: false, message: 'No method was specified' }) }

@@ -101,6 +101,7 @@ class Canvas {
     setMember(member, isPartner = false) {
         let ctx = this.ctx
         let left = member.left;
+
         let top = member.top;
         let rayon = member.height / 2;
         let borderWeight = 10;

@@ -127,6 +127,9 @@ app.post('/api/:action', async(req, res) => {
                 try {
                     let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'));
                     if (lastVersion.find(member => member.id == id).with) { lastVersion.find(partner => partner.with == id).with = null; }
+                    for (let i = 0; i < lastVersion.length; i++) {
+                        lastVersion[i].children = lastVersion[i].children.filter(child => child != id);
+                    }
                     let newVersion = lastVersion.filter(member => member.id != id);
 
                     fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(newVersion));

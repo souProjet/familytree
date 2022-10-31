@@ -7,7 +7,13 @@ class Data {
             localStorage.setItem('token', this.token);
             (async() => {
                 let firstMember = await this.createMember();
-                let partnerOfFirstMember = this.createMember([], firstMember.id)
+                if (firstMember) {
+                    let partnerOfFirstMember = await this.createMember([], firstMember.id);
+                    if (partnerOfFirstMember) {
+                        canvas.build(this.family)
+                    }
+                }
+
             })();
         } else {
             (async() => {
@@ -58,10 +64,9 @@ class Data {
 
         let birthday = new Date(Math.random() * (new Date('01-01-' + ((new Date()).getUTCFullYear() - age)).getTime() - new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()) + new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()).toLocaleDateString();
 
-        let height = depth ? Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) + "%" : "80%";
-        let heightInPx = 250 * (parseInt(height.split('%')[0]) / 100);
+        let height = 250 * (parseInt(depth ? Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) : 80) / 100);
 
-        let top = heightInPx * depth + 100;
+        let top = depth ? (height * depth + 100) : 0;
 
         let left = this.family.filter(member => member.depth == depth).length * 500
 

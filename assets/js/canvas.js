@@ -73,8 +73,7 @@ class Canvas {
         let top = event.offsetY;
         let cursorState = false;
         data.family.forEach(member => {
-            let heightInPx = 250 * (parseInt(member.height.split('%')[0]) / 100);
-            if (left >= member.left && left <= member.left + heightInPx && top >= member.top && top <= member.top + heightInPx) {
+            if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
                 event.target.style.cursor = "pointer";
                 cursorState = true
             }
@@ -88,11 +87,10 @@ class Canvas {
         let top = event.offsetY;
         let memberIsFind = false;
         data.family.forEach(member => {
-            let heightInPx = 250 * (parseInt(member.height.split('%')[0]) / 100);
-            if (left >= member.left && left <= member.left + heightInPx && top >= member.top && top <= member.top + heightInPx) {
+            if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
                 canvas.clickedMember = member.id;
                 memberIsFind = true;
-                canvas.toogleContextMenu(true, member.left + heightInPx, member.top, member.with ? true : false, member.children.length ? true : false)
+                canvas.toogleContextMenu(true, member.left + member.height, member.top, member.with ? true : false, member.children.length ? true : false)
             }
         });
         if (!memberIsFind) {
@@ -102,41 +100,40 @@ class Canvas {
     }
     setMember(member, isPartner = false) {
         let ctx = this.ctx
-        let heightInPx = 250 * (parseInt(member.height.split('%')[0]) / 100);
         let left = member.left;
         let top = member.top;
-        let rayon = heightInPx / 2;
+        let rayon = member.height / 2;
         let borderWeight = 10;
 
         //cercle    
         ctx.beginPath();
         ctx.fillStyle = 'white';
-        ctx.arc(left + rayon, top + rayon, heightInPx / 2, 0, 2 * Math.PI);
+        ctx.arc(left + rayon, top + rayon, member.height / 2, 0, 2 * Math.PI);
         ctx.fill();
 
         //bordure du cercle
         ctx.lineWidth = borderWeight;
         ctx.strokeStyle = "#bde582";
         ctx.beginPath();
-        ctx.arc(left + rayon, top + rayon, (heightInPx / 2) - (borderWeight / 2), 0, 2 * Math.PI)
+        ctx.arc(left + rayon, top + rayon, (member.height / 2) - (borderWeight / 2), 0, 2 * Math.PI)
         ctx.stroke();
 
         //photo
         let picture = new Image();
         picture.src = `./public/images/${member.gender}Default.png`;
         picture.onload = () => {
-            ctx.drawImage(picture, left, top, heightInPx, heightInPx - (borderWeight / 2))
+            ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2))
 
             //bandeau
             ctx.beginPath();
             ctx.fillStyle = "#4abaae";
-            ctx.moveTo(left, top + (heightInPx - 30 - borderWeight - 10))
-            ctx.lineTo(left + heightInPx, top + (heightInPx - 30 - borderWeight - 10))
-            ctx.lineTo(left + heightInPx - 20, top + (heightInPx - 15 - borderWeight - 10))
-            ctx.lineTo(left + heightInPx, top + (heightInPx - borderWeight - 10))
-            ctx.lineTo(left, top + (heightInPx - borderWeight - 10))
-            ctx.lineTo(left + 20, top + (heightInPx - 15 - borderWeight - 10))
-            ctx.lineTo(left, top + (heightInPx - 30 - borderWeight - 10))
+            ctx.moveTo(left, top + (member.height - 30 - borderWeight - 10))
+            ctx.lineTo(left + member.height, top + (member.height - 30 - borderWeight - 10))
+            ctx.lineTo(left + member.height - 20, top + (member.height - 15 - borderWeight - 10))
+            ctx.lineTo(left + member.height, top + (member.height - borderWeight - 10))
+            ctx.lineTo(left, top + (member.height - borderWeight - 10))
+            ctx.lineTo(left + 20, top + (member.height - 15 - borderWeight - 10))
+            ctx.lineTo(left, top + (member.height - 30 - borderWeight - 10))
             ctx.closePath()
             ctx.fill()
 
@@ -144,27 +141,52 @@ class Canvas {
             ctx.font = "20px serif"
             ctx.fillStyle = "white"
             let nameWidth = ctx.measureText(member.name).width;
-            ctx.fillText(member.name, left + (heightInPx / 2 - nameWidth / 2), top + (heightInPx - borderWeight - 20))
+            ctx.fillText(member.name, left + (member.height / 2 - nameWidth / 2), top + (member.height - borderWeight - 20))
 
             if (isPartner) {
                 let partnerJSON = data.family.find(partner => partner.id == member.with);
-                let linkLeft = (partnerJSON.left + (250 * (parseInt(partnerJSON.height.split('%')[0]) / 100)))
+                let linkLeft = (partnerJSON.left + partnerJSON.height)
                 let linkHeight = 13 - (member.depth > 0 ? (Math.log10(parseInt(member.depth) * (parseInt(member.depth) * 40))) : 0)
-                let linkTop = top + heightInPx / 2 - linkHeight / 2
+                let linkTop = top + member.height / 2 - linkHeight / 2
                 let linkWidth = left - linkLeft
                 this.setLink(linkLeft, linkTop, linkWidth, linkHeight)
             }
-            //let parents = data.family.
+            let parents = data.family.filter(parent => parent.children.indexOf(member.id) != -1);
+            if (parents.length) {
+                let partnerLink = parents.length == 2 ? true : false
+                let firstParent = partnerLink ? (parents[0].left < parents[1].left ? parents[0] : parents[1]) : parents[0]
+                let secondeParent = partnerLink ? (parents[0].left > parents[1].left ? parents[0] : parents[1]) : undefined;
+                let weight = parseFloat(member.depth ? (10 - Math.log10(member.depth * member.depth * 20)).toFixed(2) : 10);
+                let startingPointLeft = partnerLink ? (firstParent.height + (secondeParent.left - firstParent.height) / 2) : parents[0].height / 2
+                let startingPointTop = partnerLink ? (firstParent.height / 2 + weight / 2) : firstParent.height;
+                let endingPointLeft = member.left + member.height / 2;
+                let endingPointTop = member.top;
+                let cp1x, cp1y, cp2x, cp2y;
+                let height = top - startingPointTop + weight;
+                let width = startingPointLeft - endingPointLeft + weight
+
+                cp1x = startingPointLeft;
+                cp1y = endingPointTop;
+                cp2x = endingPointLeft;
+                cp2y = height;
+                this.setLink(startingPointLeft, startingPointTop, null, null, true, cp1x, cp1y, cp2x, cp2y, endingPointLeft, endingPointTop, weight)
+            }
         }
     }
-    setLink(left, top, width, height, isCurve = false) {
+    setLink(left, top, width, height, isCurve = false, cp1x, cp1y, cp2x, cp2y, x, y, weight) {
         let ctx = this.ctx;
+
         if (isCurve) {
-            console.log(left, top, width, height)
+            ctx.beginPath();
+            ctx.strokeStyle = "#bde582";
+            ctx.lineWidth = weight;
+            ctx.moveTo(left, top)
+            ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+            ctx.stroke();
         } else {
             //draw line
-            ctx.fillStyle = "#bde582";
             ctx.beginPath();
+            ctx.fillStyle = "#bde582";
             ctx.rect(left, top, width, height)
             ctx.fill();
             //draw heart

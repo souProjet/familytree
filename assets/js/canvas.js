@@ -18,14 +18,15 @@ class Canvas {
     mouseUp = (e) => {
         let deltaX = e.offsetX - canvas.inDrag.left;
         let deltaY = e.offsetY - canvas.inDrag.top;
-
-        data.family.forEach(member => {
-            member.left += deltaX
-            member.top += deltaY
-        });
-        canvas.canvas.style.left = 0;
-        canvas.canvas.style.top = 0;
-        canvas.build(data.family)
+        if (deltaX && deltaY) {
+            data.family.forEach(member => {
+                member.left += deltaX
+                member.top += deltaY
+            });
+            canvas.canvas.style.left = 0;
+            canvas.canvas.style.top = 0;
+            canvas.build(data.family)
+        }
 
         canvas.inDrag = { state: false, left: null, top: null }
     }
@@ -94,10 +95,10 @@ class Canvas {
         let top = event.offsetY;
         if (canvas.inDrag.state) {
 
-            let deltaX = left - canvas.inDrag.left;
-            let deltaY = top - canvas.inDrag.top;
-            canvas.canvas.style.left = deltaX + "px";
-            canvas.canvas.style.top = deltaY + "px";
+            // let deltaX = left - canvas.inDrag.left;
+            // let deltaY = top - canvas.inDrag.top;
+            // canvas.canvas.style.left = deltaX + "px";
+            // canvas.canvas.style.top = deltaY + "px";
             if (event.target.style.cursor != "grab") {
                 event.target.style.cursor = "grab";
             }

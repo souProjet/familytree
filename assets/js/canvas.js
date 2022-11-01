@@ -10,6 +10,22 @@ class Canvas {
         this.canvas.addEventListener('click', this.click);
         this.clickedMember = null;
         this.contextMenu = document.querySelector('.context-menu');
+        this.inDrag = { state: false, left: null, top: null }
+        this.canvas.addEventListener('mousedown', this.mouseDown);
+        this.canvas.addEventListener('mouseup', this.mouseUp);
+    }
+    mouseDown = (e) => canvas.inDrag = { state: true, left: e.offsetX, top: e.offsetY }
+    mouseUp = (e) => {
+        let deltaX = e.offsetX - canvas.inDrag.left;
+        let deltaY = e.offsetY - canvas.inDrag.top;
+        canvas.canvas.style.left = 0;
+        canvas.canvas.style.top = 0;
+        data.family.forEach(member => {
+            member.left += deltaX
+            member.top += deltaY
+        });
+        canvas.build(data.family);
+        canvas.inDrag = { state: false, left: null, top: null }
     }
     toogleContextMenu(state = true, left, top, inCouple = false, haveChild = false) {
         if (state) {
@@ -38,9 +54,7 @@ class Canvas {
             }, 200);
         }
     }
-    clearAll() {
-        this.ctx.clearRect(0, 0, this.width, this.height)
-    }
+    clearAll = () => this.ctx.clearRect(0, 0, this.width, this.height)
     build(familytree) {
         this.clearAll();
         this.setMember(familytree[0])
@@ -73,17 +87,31 @@ class Canvas {
     }
 
     mouseMove(event) {
+
         let left = event.offsetX;
         let top = event.offsetY;
-        let cursorState = false;
-        data.family.forEach(member => {
-            if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
-                event.target.style.cursor = "pointer";
-                cursorState = true
+        if (canvas.inDrag.state) {
+            let deltaX = left - canvas.inDrag.left;
+            let deltaY = top - canvas.inDrag.top;
+            canvas.canvas.style.left = deltaX + "px";
+            canvas.canvas.style.top = deltaY + "px";
+            if (event.target.style.cursor != "grab") {
+                event.target.style.cursor = "grab";
             }
-        });
-        if (event.target.style.cursor == "pointer" && !cursorState) {
+
+        } else {
             event.target.style.cursor = "default";
+
+            let cursorState = false;
+            data.family.forEach(member => {
+                if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
+                    event.target.style.cursor = "pointer";
+                    cursorState = true
+                }
+            });
+            if (event.target.style.cursor == "pointer" && !cursorState) {
+                event.target.style.cursor = "default";
+            }
         }
     }
     click(event) {
@@ -194,7 +222,7 @@ class Canvas {
             ctx.rect(left, top, width, height)
             ctx.fill();
             //draw heart
-            this.drawHeart(left + width / 2, top - height, height * 3, height * 3, 'red')
+            this.drawHeart(left + width / 2, top - height * 2, height * 3, height * 3, 'red')
         }
     }
 

@@ -125,14 +125,16 @@ class Data {
             let left = 0;
             let newFamilyTree = [...this.family]
             for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
-                left += Math.floor(canvas.width / (actualDepthData.length + 1));
+                //left += Math.floor(canvas.width / (actualDepthData.length + 1));
+                left += n ? 300 : 0;
                 newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left;
                 repositioningElements.push({
                     id: actualDepthDataWithoutCouple[n].id,
                     value: left
                 })
                 if (actualDepthDataWithoutCouple[n].with) {
-                    left += Math.floor(canvas.width / (actualDepthData.length + 1));
+                    //left += Math.floor(canvas.width / (actualDepthData.length + 1));
+                    left += 300;
                     newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left = left;
                     repositioningElements.push({
                         id: actualDepthDataWithoutCouple[n].with,

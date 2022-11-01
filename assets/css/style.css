@@ -16,7 +16,6 @@ canvas#app {
     left: 0;
     top: 0;
     z-index: 10;
-    /* background-image: linear-gradient(to right, #00b3db54, #0084b05b); */
 }
 
 .context-menu {

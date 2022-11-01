@@ -109,7 +109,7 @@ class Data {
 
         this.save('del', id);
     }
-    adjustPositioning() {
+    async adjustPositioning() {
         let maxDepth = 0;
         this.family.forEach(member => member.depth > maxDepth ? maxDepth++ : null);
         let repositioningElements = [];
@@ -124,8 +124,10 @@ class Data {
             actualDepthDataWithoutCouple.sort((a, b) => (this.family.find(member => member.children.indexOf(a.id) != -1).left - this.family.find(member => member.children.indexOf(b.id) != -1).left))
             let left = 0;
             let newFamilyTree = [...this.family]
+            for (let n = 0; n < actualDepthData.length; n++) {
+                newFamilyTree.find(member => member.id == actualDepthData[n].id).top = actualDepthData[n].depth ? (actualDepthData[n].height * actualDepthData[n].depth + 100 * actualDepthData[n].depth) : 0;
+            }
             for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
-                //left += Math.floor(canvas.width / (actualDepthData.length + 1));
                 left += n ? 300 : 0;
                 newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left;
                 repositioningElements.push({
@@ -133,7 +135,6 @@ class Data {
                     value: left
                 })
                 if (actualDepthDataWithoutCouple[n].with) {
-                    //left += Math.floor(canvas.width / (actualDepthData.length + 1));
                     left += 300;
                     newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left = left;
                     repositioningElements.push({
@@ -147,6 +148,7 @@ class Data {
 
         canvas.build(this.family)
         this.save('positioning', null, repositioningElements)
+        return true
 
     }
     escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }

@@ -91,6 +91,7 @@ class Canvas {
         let left = event.offsetX;
         let top = event.offsetY;
         if (canvas.inDrag.state) {
+
             let deltaX = left - canvas.inDrag.left;
             let deltaY = top - canvas.inDrag.top;
             canvas.canvas.style.left = deltaX + "px";
@@ -98,7 +99,6 @@ class Canvas {
             if (event.target.style.cursor != "grab") {
                 event.target.style.cursor = "grab";
             }
-
         } else {
             event.target.style.cursor = "default";
 
@@ -298,4 +298,42 @@ class Canvas {
             this.build(data.family)
         }
     }
+
+    // async exportCanvasAsPNG() {
+
+    //     let maxWidth = 0;
+    //     let maxHeight = 0;
+    //     data.family.forEach(element => {
+    //         if (element.left > maxWidth) {
+    //             maxWidth = element.left + element.height;
+    //         }
+    //         if (element.top > maxHeight) {
+    //             maxHeight = element.top + element.height;
+    //         }
+    //     })
+    //     this.canvas.width = maxWidth;
+    //     this.canvas.height = maxHeight;
+    //     let returnedData = await data.adjustPositioning();
+    //     if (returnedData) {
+    //         setTimeout(() => {
+    //             var MIME_TYPE = "image/png";
+
+    //             var imgURL = this.canvas.toDataURL(MIME_TYPE);
+
+    //             var dlLink = document.createElement('a');
+    //             dlLink.download = 'arbre_généalogique.png';
+    //             dlLink.href = imgURL;
+    //             dlLink.dataset.downloadurl = [MIME_TYPE, dlLink.download, dlLink.href].join(':');
+
+    //             document.body.appendChild(dlLink);
+    //             dlLink.click();
+    //             document.body.removeChild(dlLink);
+    //             setTimeout(() => {
+    //                 this.canvas.with = this.width;
+    //                 this.canvas.height = this.height;
+    //                 data.adjustPositioning();
+    //             }, 200);
+    //         }, 1000);
+    //     }
+    // }
 }

@@ -66,16 +66,16 @@ class Data {
 
         let height = 250 * (parseInt(depth ? Math.floor(80 - Math.log10(depth * (depth * 10)) * 15) : 80) / 100);
 
-        let top = depth ? (height * depth + 100) : 0;
+        let top = depth ? (height * depth + 100 * depth) : 0;
 
-        let left = this.family.filter(member => member.depth == depth).length * 500
+        let children = inCoupleWith ? this.family.find(p => p.id == inCoupleWith).children : [];
 
         let newMember = {
             "id": newMemberID,
             "name": name,
             "birthday": birthday,
             "age": age,
-            "children": [],
+            "children": children,
             "with": inCoupleWith,
             "picture": false,
             "gender": gender,
@@ -83,16 +83,18 @@ class Data {
             "depth": depth,
             "height": height,
             "top": top,
-            "left": left
+            "left": 0
         }
         this.family.push(newMember);
 
+        this.adjustPositioning();
         this.save('add', null, newMember, parentsID);
 
         return newMember;
     }
     editMember = (id, key, newValue) => {
         this.family.find(member => member.id == id)[key] = newValue;
+        this.adjustPositioning();
         this.save('edit', id, key, newValue);
     }
     removeMember(id) {
@@ -103,11 +105,14 @@ class Data {
         }
         let newVersion = lastVersion.filter(member => member.id != id);
         this.family = newVersion;
+        this.adjustPositioning();
+
         this.save('del', id);
     }
     adjustPositioning() {
         let maxDepth = 0;
         this.family.forEach(member => member.depth > maxDepth ? maxDepth++ : null);
+        let repositioningElements = [];
         for (let i = 0; i <= maxDepth; i++) {
             let actualDepthData = this.family.filter(member => member.depth == i);
             let actualDepthDataWithoutCouple;
@@ -116,19 +121,30 @@ class Data {
             } else {
                 actualDepthDataWithoutCouple = [actualDepthData[0]]
             }
-
+            actualDepthDataWithoutCouple.sort((a, b) => (this.family.find(member => member.children.indexOf(a.id) != -1).left - this.family.find(member => member.children.indexOf(b.id) != -1).left))
+            let left = 0;
+            let newFamilyTree = [...this.family]
             for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
-                // let lastLeft = i * 500;
-                // let newFamilyTree = this.family;
-                //this.family.forEach(member => member.left > lastLeft && member.depth == i ? lastLeft = member.left : null);
-                // newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[i].id).left = lastLeft;
-                // if (actualDepthDataWithoutCouple[i].with) {
-                //     newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[i].with).left = this.family.find(member => member.id == actualDepthDataWithoutCouple[i].id).left + 500;
-                // }
-                // this.family = newFamilyTree
+                left += Math.floor(canvas.width / (actualDepthData.length + 1));
+                newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left;
+                repositioningElements.push({
+                    id: actualDepthDataWithoutCouple[n].id,
+                    value: left
+                })
+                if (actualDepthDataWithoutCouple[n].with) {
+                    left += Math.floor(canvas.width / (actualDepthData.length + 1));
+                    newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left = left;
+                    repositioningElements.push({
+                        id: actualDepthDataWithoutCouple[n].with,
+                        value: left
+                    })
+                }
             }
+            this.family = newFamilyTree
         }
+
         canvas.build(this.family)
+        this.save('positioning', null, repositioningElements)
 
     }
     escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }

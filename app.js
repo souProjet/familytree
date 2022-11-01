@@ -144,6 +144,28 @@ app.post('/api/:action', async(req, res) => {
                         message: 'delete failed'
                     })
                 }
+                //#############################################################################################################################
+                //                                                  METHOD "POSITIONING"
+                //#############################################################################################################################
+            } else if (method == 'positioning') {
+                try {
+                    let repositioningElements = req.body.key;
+                    let lastVersion = JSON.parse(fs.readFileSync(HOME + 'data/tree/' + token + '.json'));
+                    repositioningElements.forEach(element => {
+                        lastVersion.find(member => member.id == element.id) ? lastVersion.find(member => member.id == element.id).left = parseInt(element.value) : null
+                    })
+                    fs.writeFileSync(HOME + 'data/tree/' + token + '.json', JSON.stringify(lastVersion));
+                    res.status(200).send({
+                        completed: true,
+                        message: 'successful positioning'
+                    })
+                } catch (e) {
+                    console.log(e);
+                    res.status(200).send({
+                        completed: false,
+                        message: 'positioning failed'
+                    })
+                }
             } else {
                 res.status(200).send({
                     completed: false,

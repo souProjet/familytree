@@ -62,6 +62,10 @@ class Canvas {
                         if (actualChild.children.length) {
                             buildingProcess(familytree, actualChild)
                         }
+                    } else {
+                        if (actualChild.children.length) {
+                            buildingProcess(familytree, actualChild)
+                        }
                     }
                 }
             }
@@ -158,18 +162,17 @@ class Canvas {
                 let firstParent = partnerLink ? (parents[0].left < parents[1].left ? parents[0] : parents[1]) : parents[0]
                 let secondeParent = partnerLink ? (parents[0].left > parents[1].left ? parents[0] : parents[1]) : undefined;
                 let weight = parseFloat(member.depth ? (10 - Math.log10(member.depth * member.depth * 20)).toFixed(2) : 10);
-                let startingPointLeft = partnerLink ? (firstParent.height + (secondeParent.left - firstParent.height) / 2) : parents[0].height / 2
-                let startingPointTop = partnerLink ? (firstParent.height / 2 + weight / 2) : firstParent.height;
+                let startingPointLeft = partnerLink ? (firstParent.left + firstParent.height + (secondeParent.left - (firstParent.left + firstParent.height)) / 2) : (firstParent.left + parents[0].height / 2)
+                let startingPointTop = partnerLink ? (firstParent.top + firstParent.height / 2 + weight / 2) : firstParent.top + firstParent.height;
                 let endingPointLeft = member.left + member.height / 2;
                 let endingPointTop = member.top;
                 let cp1x, cp1y, cp2x, cp2y;
                 let height = top - startingPointTop + weight;
                 let width = startingPointLeft - endingPointLeft + weight
-
                 cp1x = startingPointLeft;
                 cp1y = endingPointTop;
                 cp2x = endingPointLeft;
-                cp2y = height;
+                cp2y = endingPointTop - height / 2;
                 this.setLink(startingPointLeft, startingPointTop, null, null, true, cp1x, cp1y, cp2x, cp2y, endingPointLeft, endingPointTop, weight)
             }
         }

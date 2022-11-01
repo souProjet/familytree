@@ -1,2 +1,2 @@
 # familytree
-![enter image description here](https://github.com/souProjet/familytree/tree/main/assets/images/digital_family_tree.png)
+![digital familytree](https://github.com/souProjet/familytree/blob/main/assets/images/digital_family_tree.png?raw=true)

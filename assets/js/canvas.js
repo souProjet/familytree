@@ -18,13 +18,15 @@ class Canvas {
     mouseUp = (e) => {
         let deltaX = e.offsetX - canvas.inDrag.left;
         let deltaY = e.offsetY - canvas.inDrag.top;
-        canvas.canvas.style.left = 0;
-        canvas.canvas.style.top = 0;
+
         data.family.forEach(member => {
             member.left += deltaX
             member.top += deltaY
         });
-        canvas.build(data.family);
+        canvas.canvas.style.left = 0;
+        canvas.canvas.style.top = 0;
+        canvas.build(data.family)
+
         canvas.inDrag = { state: false, left: null, top: null }
     }
     toogleContextMenu(state = true, left, top, inCouple = false, haveChild = false) {

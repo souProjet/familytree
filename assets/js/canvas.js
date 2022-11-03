@@ -53,7 +53,7 @@ class Canvas {
 
         canvas.inDrag = { state: false, left: null, top: null }
     }
-    toogleContextMenu(state = true, left, top, inCouple = false, haveChild = false) {
+    toogleContextMenu(state = true, left, top, inCouple = false, haveChild = false, memberId) {
         if (state) {
             this.contextMenu.style.left = left + "px";
             this.contextMenu.style.top = top + "px";
@@ -69,6 +69,14 @@ class Canvas {
                 this.contextMenu.style.height = "40px";
                 this.contextMenu.querySelector('.remove-member').style.display = "none";
                 this.contextMenu.querySelector('.add-partner').style.display = "none";
+            } else if (!inCouple && haveChild) {
+                this.contextMenu.style.height = "80px";
+                this.contextMenu.querySelector('.remove-member').style.display = "none";
+                this.contextMenu.querySelector('.add-partner').style.display = "block";
+            }
+            if (!data.family.find(member => member.id == memberId).depth && !haveChild) {
+                this.contextMenu.style.height = (parseInt(this.contextMenu.style.height.split('px')[0]) - 40) + "px";
+                this.contextMenu.querySelector('.remove-member').style.display = "none";
             }
             this.contextMenu.style.zIndex = "50";
             this.contextMenu.classList.remove('hide');
@@ -164,7 +172,7 @@ class Canvas {
 
                 canvas.profileCard.classList.remove('hide');
 
-                canvas.toogleContextMenu(true, member.left + member.height, member.top, member.with ? true : false, member.children.length ? true : false)
+                canvas.toogleContextMenu(true, member.left + member.height, member.top, member.with ? true : false, member.children.length ? true : false, member.id)
             }
         });
         if (!memberIsFind) {
@@ -318,6 +326,7 @@ class Canvas {
     removeMember() {
         let memberID = this.clickedMember;
         data.removeMember(memberID);
+        this.clickedMember = null;
         this.toogleContextMenu(false)
         this.build(data.family)
     }

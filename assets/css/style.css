@@ -188,3 +188,102 @@ canvas#app {
 .wrapper-button .button:hover .button-tooltip {
     text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.1);
 }
+
+.profile.hide {
+    opacity: 0;
+    transform: translateY(-102%);
+    transition: all .3s cubic-bezier(.21, 1.17, .34, 1.13);
+}
+
+.profile {
+    z-index: 70;
+    opacity: 1;
+    transform: translateY(0);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 3rem;
+    width: 200px;
+    border-radius: 16px;
+    position: absolute;
+    right: 2%;
+    top: 2%;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    text-align: center;
+    color: #f1f3f3;
+    background-image: linear-gradient(135deg, rgba(117, 46, 124, 0.35), rgba(115, 74, 88, 0.1) 0%, #202d42 0%, #3f5476 100%);
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    transition: all .3s cubic-bezier(.21, 1.17, .34, 1.13);
+}
+
+.profile .profile-image {
+    border-radius: 50%;
+    overflow: hidden;
+    width: 175px;
+    height: 175px;
+    position: relative;
+}
+
+.profile .profile-image img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    cursor: pointer;
+}
+
+.profile .profile-image:hover {
+    filter: blur(2px);
+    transition: all .2s ease-in-out;
+}
+
+.profile .profile-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    outline: none;
+    border: none;
+}
+
+.profile span {
+    font-size: 1.25em;
+}
+
+.profile .profile-birthday {
+    font-size: 1em;
+    color: #7d8396;
+    border: none;
+    outline: none;
+    background: transparent;
+}
+
+.profile .profile-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile .profile-actions .btn {
+    border: 0;
+    background-color: transparent;
+    padding: 0;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    color: #fff;
+    padding: 0 1.375em;
+    border-radius: 99em;
+    font-size: 1.25em;
+    transition: 0.15s ease;
+}
+
+.profile .profile-actions .btn.active {
+    background-color: #3772ff;
+    background-image: linear-gradient(135deg, #5587ff, #3772ff);
+}

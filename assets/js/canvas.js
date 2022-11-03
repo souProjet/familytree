@@ -13,6 +13,29 @@ class Canvas {
         this.inDrag = { state: false, left: null, top: null }
         this.canvas.addEventListener('mousedown', this.mouseDown);
         this.canvas.addEventListener('mouseup', this.mouseUp);
+        this.profileCard = document.querySelector('.profile');
+        let self = this;
+        this.profileCard.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('active')) {
+                    self.profileCard.querySelectorAll('.btn').forEach(btn2 => {
+                        btn2.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    let activeMember = data.family.find(member => member.id == self.clickedMember)
+                    if (!activeMember.picture) {
+                        self.profileCard.querySelector('.profile-image img').src = './public/images/' + (activeMember.gender == 'female' ? 'male' : 'female') + 'Default.png'
+                        data.editMember(activeMember.id, 'gender', activeMember.gender == 'female' ? 'male' : 'female')
+                    }
+                }
+            });
+        });
+        this.profileCard.querySelector('.profile-birthday').addEventListener('change', (e) => {
+            if (e.target.value) {
+                data.editMember(self.clickedMember, 'birthday', e.target.value.split('-').reverse().join('/'))
+                data.editMember(self.clickedMember, 'age', ((new Date()).getFullYear() - parseInt(e.target.value.split('-')[0])).toString())
+            }
+        });
     }
     mouseDown = (e) => canvas.inDrag = { state: true, left: e.offsetX, top: e.offsetY }
     mouseUp = (e) => {
@@ -121,14 +144,31 @@ class Canvas {
         let left = event.offsetX;
         let top = event.offsetY;
         let memberIsFind = false;
+        canvas.profileCard.classList.add('hide');
+        let newName = canvas.profileCard.querySelector('.profile-name').innerText;
+        if (canvas.clickedMember && newName != data.family.find(member => member.id == canvas.clickedMember).name && newName && newName.length < 50) {
+            data.editMember(canvas.clickedMember, 'name', newName)
+        }
         data.family.forEach(member => {
             if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
                 canvas.clickedMember = member.id;
                 memberIsFind = true;
+                canvas.profileCard.querySelector('.profile-name').innerText = member.name;
+                canvas.profileCard.querySelector('.profile-age').innerText = member.age + " ans";
+
+                canvas.profileCard.querySelector('.profile-birthday').value = member.birthday.replace(/&#x2F;/gm, '/').split('/').reverse().join('-')
+                canvas.profileCard.querySelector('.profile-image img').src = member.picture ? ('./api/picture/' + member.picture) : './public/images/' + member.gender + 'Default.png';
+
+                canvas.profileCard.querySelectorAll('.btn')[0].classList.value = "btn " + (member.gender == 'male' ? 'active' : '')
+                canvas.profileCard.querySelectorAll('.btn')[1].classList.value = "btn " + (member.gender == 'female' ? 'active' : '')
+
+                canvas.profileCard.classList.remove('hide');
+
                 canvas.toogleContextMenu(true, member.left + member.height, member.top, member.with ? true : false, member.children.length ? true : false)
             }
         });
         if (!memberIsFind) {
+
             canvas.clickedMember = null;
             canvas.toogleContextMenu(false);
         }

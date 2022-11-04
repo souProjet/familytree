@@ -23,12 +23,10 @@ class Canvas {
                     });
                     e.target.classList.add('active');
                     let activeMember = data.family.find(member => member.id == self.clickedMember)
-                    if (!activeMember.picture) {
-                        self.profileCard.querySelector('.profile-image img').src = './public/images/' + (activeMember.gender == 'female' ? 'male' : 'female') + 'Default.png'
-                        data.editMember(activeMember.id, 'gender', activeMember.gender == 'female' ? 'male' : 'female')
-                    } else {
 
-                    }
+                    self.profileCard.querySelector('.profile-image img').src = (activeMember.picture ? ('./api/picture/' + data.token + '_' + activeMember.picture) : ('./public/images/' + (activeMember.gender == 'female' ? 'male' : 'female') + 'Default.png'))
+                    data.editMember(activeMember.id, 'gender', activeMember.gender == 'female' ? 'male' : 'female')
+
                 }
             });
         });
@@ -45,7 +43,8 @@ class Canvas {
         this.uploadInput.addEventListener('change', (e) => {
             let file = e.target.files[0];
             if (file) {
-                let pictureId = data.createID(5);
+                let fileExtension = file.name.split('.')[file.name.split('.').length - 1];
+                let pictureId = data.createID(5) + '.' + fileExtension;
                 let formData = new FormData();
                 formData.append('picture', file);
                 formData.append('id', pictureId)
@@ -55,9 +54,9 @@ class Canvas {
                         'Authorization': 'Bearer ' + data.token
                     },
                     body: formData
-                }).then(response => response.json()).then(data => {
+                }).then(response => response.json()).then(returnData => {
 
-                    if (data.completed) {
+                    if (returnData.completed) {
                         data.editMember(self.clickedMember, 'picture', pictureId);
                         self.uploadInput.value = '';
                     }
@@ -193,7 +192,7 @@ class Canvas {
                 canvas.profileCard.querySelector('.profile-age').innerText = member.age + " ans";
 
                 canvas.profileCard.querySelector('.profile-birthday').value = member.birthday.replace(/&#x2F;/gm, '/').split('/').reverse().join('-')
-                canvas.profileCard.querySelector('.profile-image img').src = member.picture ? ('./api/picture/' + member.picture) : './public/images/' + member.gender + 'Default.png';
+                canvas.profileCard.querySelector('.profile-image img').src = member.picture ? ('./api/picture/' + data.token + '_' + member.picture) : ('./public/images/' + member.gender + 'Default.png');
 
                 canvas.profileCard.querySelectorAll('.btn')[0].classList.value = "btn " + (member.gender == 'male' ? 'active' : '')
                 canvas.profileCard.querySelectorAll('.btn')[1].classList.value = "btn " + (member.gender == 'female' ? 'active' : '')
@@ -209,6 +208,7 @@ class Canvas {
             canvas.toogleContextMenu(false);
         }
     }
+
     setMember(member, isPartner = false) {
         let ctx = this.ctx
         let left = member.left;

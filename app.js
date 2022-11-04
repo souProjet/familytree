@@ -182,7 +182,7 @@ app.post('/api/:action', async(req, res) => {
                         let acceptedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
                         if (acceptedExtensions.indexOf(fileExtension) != -1) {
 
-                            fs.writeFileSync(HOME + 'data/picture/' + token + '_' + id + '.' + fileExtension, file.data, (error) => {
+                            fs.writeFileSync(HOME + 'data/picture/' + token + '_' + id, file.data, (error) => {
                                 if (error) {
                                     console.log(error);
                                     res.status(200).send({
@@ -232,20 +232,22 @@ app.post('/api/:action', async(req, res) => {
 //#############################################################################################################################
 //                                               ROUTES DE L'API EN GET
 //#############################################################################################################################
-app.get('/api/:action', async(req, res) => {
+app.get('/api/:action/:id?', async(req, res) => {
     let action = req.params.action
-    let token = req.headers.authorization.split(' ')[1]
 
-    if (!token) {
-        res.status(200).send({
-            completed: false,
-            message: 'not authorized'
-        });
-    } else {
-        //#############################################################################################################################
-        //                                               ACTION "GET"
-        //#############################################################################################################################
-        if (action == 'get') {
+
+    //#############################################################################################################################
+    //                                               ACTION "GET"
+    //#############################################################################################################################
+    if (action == 'get') {
+        let token = req.headers.authorization.split(' ')[1]
+
+        if (!token) {
+            res.status(200).send({
+                completed: false,
+                message: 'not authorized'
+            });
+        } else {
             try {
                 res.status(200).send({
                     completed: true,
@@ -259,12 +261,21 @@ app.get('/api/:action', async(req, res) => {
                     message: 'recovery failed'
                 })
             }
-        } else {
-            res.status(200).send({
-                completed: false,
-                message: 'unknown action'
-            })
         }
+    } else if (action == 'picture') {
+        let id = escapeHTML(req.params.id)
+        fs.exists(HOME + 'data/picture/' + id, (exists) => {
+            if (exists) {
+                res.sendFile((HOME == './' ? (__dirname + '/') : '') + 'data/picture/' + id)
+            } else {
+                res.sendFile(__dirname + './assets/images/femaleDefault.png')
+            }
+        });
+    } else {
+        res.status(200).send({
+            completed: false,
+            message: 'unknown action'
+        })
     }
 });
 

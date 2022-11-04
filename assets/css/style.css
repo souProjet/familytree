@@ -252,10 +252,11 @@ canvas#app {
 
 .profile .profile-birthday {
     font-size: 1em;
-    color: #7d8396;
+    color: white;
     border: none;
     outline: none;
     background: transparent;
+    cursor: pointer;
 }
 
 .profile .profile-actions {

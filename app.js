@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const APP_NAME = "familytree";
-const HOME = process.argv.includes('--dev') ? './' : process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + `/.${APP_NAME}_data`;
+const HOME = process.argv.includes('--dev') ? './' : process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'] + `/.${APP_NAME}_data/`;
 const config = require(HOME + '/config.json') // fichier contenant le port d'écoute du server web ainsi que le lien du webhook discord
 
 //#############################################################################################################################
@@ -170,6 +170,54 @@ app.post('/api/:action', async(req, res) => {
                 res.status(200).send({
                     completed: false,
                     message: 'Unknown method'
+                })
+            }
+        } else if (action == 'upload') {
+            let file = req.files['picture'];
+            let id = escapeHTML(req.body.id);
+            if (file && id) {
+                if (file.size < 5000000) {
+                    try {
+                        let fileExtension = file.name.split('.')[file.name.split('.').length - 1];
+                        let acceptedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+                        if (acceptedExtensions.indexOf(fileExtension) != -1) {
+
+                            fs.writeFileSync(HOME + 'data/picture/' + token + '_' + id + '.' + fileExtension, file.data, (error) => {
+                                if (error) {
+                                    console.log(error);
+                                    res.status(200).send({
+                                        completed: false,
+                                        message: 'upload failed'
+                                    })
+                                }
+                            });
+                            res.status(200).send({
+                                completed: true,
+                                message: 'upload successful'
+                            })
+                        } else {
+                            res.status(200).send({
+                                completed: false,
+                                message: 'wrong file format'
+                            })
+                        }
+                    } catch (e) {
+                        console.log(e);
+                        res.status(200).send({
+                            completed: false,
+                            message: 'upload failed'
+                        })
+                    }
+                } else {
+                    res.status(200).send({
+                        completed: false,
+                        message: 'image too large'
+                    })
+                }
+            } else {
+                res.status(200).send({
+                    completed: false,
+                    message: 'missing body parts'
                 })
             }
         } else {

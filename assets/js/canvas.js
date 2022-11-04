@@ -26,6 +26,8 @@ class Canvas {
                     if (!activeMember.picture) {
                         self.profileCard.querySelector('.profile-image img').src = './public/images/' + (activeMember.gender == 'female' ? 'male' : 'female') + 'Default.png'
                         data.editMember(activeMember.id, 'gender', activeMember.gender == 'female' ? 'male' : 'female')
+                    } else {
+
                     }
                 }
             });
@@ -36,6 +38,32 @@ class Canvas {
                 data.editMember(self.clickedMember, 'age', ((new Date()).getFullYear() - parseInt(e.target.value.split('-')[0])).toString())
             }
         });
+        this.uploadInput = document.querySelector('#upload');
+
+        this.profileCard.querySelector('.profile-image img').addEventListener('click', () => self.uploadInput.click());
+
+        this.uploadInput.addEventListener('change', (e) => {
+            let file = e.target.files[0];
+            if (file) {
+                let pictureId = data.createID(5);
+                let formData = new FormData();
+                formData.append('picture', file);
+                formData.append('id', pictureId)
+                fetch('./api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + data.token
+                    },
+                    body: formData
+                }).then(response => response.json()).then(data => {
+
+                    if (data.completed) {
+                        data.editMember(self.clickedMember, 'picture', pictureId);
+                        self.uploadInput.value = '';
+                    }
+                })
+            }
+        })
     }
     mouseDown = (e) => canvas.inDrag = { state: true, left: e.offsetX, top: e.offsetY }
     mouseUp = (e) => {

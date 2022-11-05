@@ -207,7 +207,20 @@ class Canvas {
             canvas.toogleContextMenu(false);
         }
     }
-
+    roundedImage(x, y, width, height, radius) {
+        let ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
     setMember(member, isPartner = false) {
         let ctx = this.ctx
         let left = member.left + data.deltaPosition.left;
@@ -222,19 +235,29 @@ class Canvas {
         ctx.arc(left + rayon, top + rayon, member.height / 2, 0, 2 * Math.PI);
         ctx.fill();
 
-        //bordure du cercle
-        ctx.lineWidth = borderWeight;
-        ctx.strokeStyle = "#bde582";
-        ctx.beginPath();
-        ctx.arc(left + rayon, top + rayon, (member.height / 2) - (borderWeight / 2), 0, 2 * Math.PI)
-        ctx.stroke();
+
 
         //photo
-        let picture = new Image();
-        picture.src = `./public/images/${member.gender}Default.png`;
-        picture.onload = () => {
-            ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2))
 
+        let picture = new Image();
+        picture.src = member.picture ? ('./api/picture/' + data.token + '_' + member.picture) : (`./public/images/${member.gender}Default.png`);
+
+        picture.onload = () => {
+            if (member.picture) {
+                ctx.save();
+                canvas.roundedImage(left, top, member.height, member.height - (borderWeight / 2), (member.height / 2) + (borderWeight * 2));
+                ctx.clip();
+                ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2));
+                ctx.restore();
+            } else {
+                ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2));
+            }
+            //bordure du cercle
+            ctx.lineWidth = borderWeight;
+            ctx.strokeStyle = "#bde582";
+            ctx.beginPath();
+            ctx.arc(left + rayon, top + rayon, (member.height / 2) - (borderWeight / 2), 0, 2 * Math.PI)
+            ctx.stroke();
             //bandeau
             ctx.beginPath();
             ctx.fillStyle = "#4abaae";
@@ -281,6 +304,7 @@ class Canvas {
                 cp2y = endingPointTop - height / 2;
                 this.setLink(startingPointLeft, startingPointTop, null, null, true, cp1x, cp1y, cp2x, cp2y, endingPointLeft, endingPointTop, weight)
             }
+
         }
     }
     setLink(left, top, width, height, isCurve = false, cp1x, cp1y, cp2x, cp2y, x, y, weight) {

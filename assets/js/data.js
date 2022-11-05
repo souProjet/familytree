@@ -1,6 +1,7 @@
 class Data {
     constructor() {
         this.family = [];
+        this.deltaPosition = { left: 0, top: 0 };
         this.token = localStorage.getItem('token')
         if (!this.token) {
             this.token = this.createID(10);
@@ -125,18 +126,20 @@ class Data {
             let left = 0;
             let newFamilyTree = [...this.family]
             for (let n = 0; n < actualDepthData.length; n++) {
-                newFamilyTree.find(member => member.id == actualDepthData[n].id).top = actualDepthData[n].depth ? (actualDepthData[n].height * actualDepthData[n].depth + 100 * actualDepthData[n].depth) : 0;
+                let top = actualDepthData[n].depth ? (actualDepthData[n].height * actualDepthData[n].depth + 100 * actualDepthData[n].depth) : 0;
+                newFamilyTree.find(member => member.id == actualDepthData[n].id).top = top
             }
             for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
                 left += i ? (n ? 300 : 0) : (canvas.width / 2) - (actualDepthDataWithoutCouple[n].height + (newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left - (actualDepthDataWithoutCouple[n].left + actualDepthDataWithoutCouple[n].height)) / 2)
-                newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left;
+                newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left
+
                 repositioningElements.push({
                     id: actualDepthDataWithoutCouple[n].id,
                     value: left
                 })
                 if (actualDepthDataWithoutCouple[n].with) {
                     left += 300;
-                    newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left = left;
+                    newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left = left
                     repositioningElements.push({
                         id: actualDepthDataWithoutCouple[n].with,
                         value: left

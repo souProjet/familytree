@@ -69,12 +69,12 @@ class Canvas {
         let deltaX = e.offsetX - canvas.inDrag.left;
         let deltaY = e.offsetY - canvas.inDrag.top;
         if (deltaX && deltaY) {
-            data.family.forEach(member => {
-                member.left += deltaX
-                member.top += deltaY
-            });
-            canvas.canvas.style.left = 0;
-            canvas.canvas.style.top = 0;
+            // data.deltaPosition.forEach(member => {
+            data.deltaPosition.left += deltaX
+            data.deltaPosition.top += deltaY
+                //});
+                // canvas.canvas.style.left = 0;
+                // canvas.canvas.style.top = 0;
             canvas.build(data.family)
         }
 
@@ -152,7 +152,6 @@ class Canvas {
         let left = event.offsetX;
         let top = event.offsetY;
         if (canvas.inDrag.state) {
-
             // let deltaX = left - canvas.inDrag.left;
             // let deltaY = top - canvas.inDrag.top;
             // canvas.canvas.style.left = deltaX + "px";
@@ -165,7 +164,7 @@ class Canvas {
 
             let cursorState = false;
             data.family.forEach(member => {
-                if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
+                if (left >= (member.left + data.deltaPosition.left) && left <= (member.left + data.deltaPosition.left) + member.height && top >= (member.top + data.deltaPosition.top) && top <= (member.top + data.deltaPosition.top) + member.height) {
                     event.target.style.cursor = "pointer";
                     cursorState = true
                 }
@@ -185,7 +184,7 @@ class Canvas {
             data.editMember(canvas.clickedMember, 'name', newName)
         }
         data.family.forEach(member => {
-            if (left >= member.left && left <= member.left + member.height && top >= member.top && top <= member.top + member.height) {
+            if (left >= member.left + data.deltaPosition.left && left <= member.left + data.deltaPosition.left + member.height && top >= member.top + data.deltaPosition.top && top <= member.top + data.deltaPosition.top + member.height) {
                 canvas.clickedMember = member.id;
                 memberIsFind = true;
                 canvas.profileCard.querySelector('.profile-name').innerText = member.name;
@@ -199,7 +198,7 @@ class Canvas {
 
                 canvas.profileCard.classList.remove('hide');
 
-                canvas.toogleContextMenu(true, member.left + member.height, member.top, member.with ? true : false, member.children.length ? true : false, member.id)
+                canvas.toogleContextMenu(true, (member.left + data.deltaPosition.left) + member.height, (member.top + data.deltaPosition.top), member.with ? true : false, member.children.length ? true : false, member.id)
             }
         });
         if (!memberIsFind) {
@@ -211,9 +210,9 @@ class Canvas {
 
     setMember(member, isPartner = false) {
         let ctx = this.ctx
-        let left = member.left;
+        let left = member.left + data.deltaPosition.left;
 
-        let top = member.top;
+        let top = member.top + data.deltaPosition.top;
         let rayon = member.height / 2;
         let borderWeight = 10;
 
@@ -257,7 +256,7 @@ class Canvas {
 
             if (isPartner) {
                 let partnerJSON = data.family.find(partner => partner.id == member.with);
-                let linkLeft = (partnerJSON.left + partnerJSON.height)
+                let linkLeft = (partnerJSON.left + data.deltaPosition.left + partnerJSON.height)
                 let linkHeight = 13 - (member.depth > 0 ? (Math.log10(parseInt(member.depth) * (parseInt(member.depth) * 40))) : 0)
                 let linkTop = top + member.height / 2 - linkHeight / 2
                 let linkWidth = left - linkLeft
@@ -266,13 +265,13 @@ class Canvas {
             let parents = data.family.filter(parent => parent.children.indexOf(member.id) != -1);
             if (parents.length) {
                 let partnerLink = parents.length == 2 ? true : false
-                let firstParent = partnerLink ? (parents[0].left < parents[1].left ? parents[0] : parents[1]) : parents[0]
-                let secondeParent = partnerLink ? (parents[0].left > parents[1].left ? parents[0] : parents[1]) : undefined;
+                let firstParent = partnerLink ? ((parents[0].left + data.deltaPosition.left) < (parents[1].left + data.deltaPosition.left) ? parents[0] : parents[1]) : parents[0]
+                let secondeParent = partnerLink ? ((parents[0].left + data.deltaPosition.left) > (parents[1].left + data.deltaPosition.left) ? parents[0] : parents[1]) : undefined;
                 let weight = parseFloat(member.depth ? (10 - Math.log10(member.depth * member.depth * 20)).toFixed(2) : 10);
-                let startingPointLeft = partnerLink ? (firstParent.left + firstParent.height + (secondeParent.left - (firstParent.left + firstParent.height)) / 2) : (firstParent.left + parents[0].height / 2)
-                let startingPointTop = partnerLink ? (firstParent.top + firstParent.height / 2 + weight / 2) : firstParent.top + firstParent.height;
-                let endingPointLeft = member.left + member.height / 2;
-                let endingPointTop = member.top;
+                let startingPointLeft = partnerLink ? ((firstParent.left + data.deltaPosition.left) + firstParent.height + ((secondeParent.left + data.deltaPosition.left) - ((firstParent.left + data.deltaPosition.left) + firstParent.height)) / 2) : ((firstParent.left + data.deltaPosition.left) + parents[0].height / 2)
+                let startingPointTop = partnerLink ? (firstParent.top + data.deltaPosition.top + firstParent.height / 2 + weight / 2) : firstParent.top + data.deltaPosition.top + firstParent.height;
+                let endingPointLeft = left + member.height / 2;
+                let endingPointTop = top;
                 let cp1x, cp1y, cp2x, cp2y;
                 let height = top - startingPointTop + weight;
                 let width = startingPointLeft - endingPointLeft + weight

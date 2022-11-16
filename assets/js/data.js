@@ -130,7 +130,7 @@ class Data {
                 newFamilyTree.find(member => member.id == actualDepthData[n].id).top = top
             }
             for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
-                left += i ? (n ? 300 : 0) : (canvas.width / 2) - (actualDepthDataWithoutCouple[n].height + (newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left - (actualDepthDataWithoutCouple[n].left + actualDepthDataWithoutCouple[n].height)) / 2)
+                left += i ? (n ? 300 : 0) : (canvas.width / 2) - (actualDepthDataWithoutCouple[n].height + (newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with) ? newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left : 0 - (actualDepthDataWithoutCouple[n].left + actualDepthDataWithoutCouple[n].height)) / 2)
                 newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left
 
                 repositioningElements.push({

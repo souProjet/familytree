@@ -6,13 +6,10 @@ class Canvas {
         this.canvas.height = this.height;
         this.canvas.width = this.width;
         this.ctx = canvas.getContext('2d');
-        this.canvas.addEventListener('mousemove', this.mouseMove);
         this.canvas.addEventListener('click', this.click);
         this.clickedMember = null;
         this.contextMenu = document.querySelector('.context-menu');
         this.inDrag = { state: false, left: null, top: null }
-        this.canvas.addEventListener('mousedown', this.mouseDown);
-        this.canvas.addEventListener('mouseup', this.mouseUp);
         this.profileCard = document.querySelector('.profile');
         let self = this;
         this.profileCard.querySelectorAll('.btn').forEach(btn => {
@@ -62,24 +59,56 @@ class Canvas {
                     }
                 })
             }
-        })
-    }
-    mouseDown = (e) => canvas.inDrag = { state: true, left: e.offsetX, top: e.offsetY }
-    mouseUp = (e) => {
-        let deltaX = e.offsetX - canvas.inDrag.left;
-        let deltaY = e.offsetY - canvas.inDrag.top;
-        if (deltaX && deltaY) {
-            // data.deltaPosition.forEach(member => {
-            data.deltaPosition.left += deltaX
-            data.deltaPosition.top += deltaY
-                //});
-                // canvas.canvas.style.left = 0;
-                // canvas.canvas.style.top = 0;
-            canvas.build(data.family)
-        }
+        });
 
-        canvas.inDrag = { state: false, left: null, top: null }
+
+        this.canvas.onmousedown = function(event) {
+            let shiftX = event.clientX - self.canvas.getBoundingClientRect().left;
+            let shiftY = event.clientY - self.canvas.getBoundingClientRect().top;
+            self.inDrag = { state: true, left: shiftX, top: shiftY }
+            console.log(self.inDrag)
+            self.canvas.style.position = 'absolute';
+
+            moveAt(event.pageX, event.pageY);
+
+
+            function moveAt(pageX, pageY) {
+                self.canvas.style.left = pageX - shiftX + 'px';
+                self.canvas.style.top = pageY - shiftY + 'px';
+            }
+
+            function onMouseMove(event) {
+                moveAt(event.pageX, event.pageY);
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+            self.canvas.onmouseup = function(e) {
+                document.removeEventListener('mousemove', onMouseMove);
+                self.canvas.onmouseup = null;
+                let shiftXAfter = e.clientX;
+                let shiftYAfter = e.clientY;
+                let deltaX = shiftXAfter - self.inDrag.left;
+                let deltaY = shiftYAfter - self.inDrag.top;
+                console.log(deltaX, deltaY)
+                if (deltaX && deltaY) {
+                    data.deltaPosition.left += deltaX
+                    data.deltaPosition.top += deltaY
+                    self.canvas.style.left = 0;
+                    self.canvas.style.top = 0;
+                    self.build(data.family)
+                }
+
+                self.inDrag = { state: false, left: null, top: null }
+
+            };
+
+        };
+
+        this.canvas.ondragstart = function() {
+            return false;
+        };
     }
+
     toogleContextMenu(state = true, left, top, inCouple = false, haveChild = false, memberId) {
         if (state) {
             this.contextMenu.style.left = left + "px";
@@ -152,11 +181,8 @@ class Canvas {
         let left = event.offsetX;
         let top = event.offsetY;
         if (canvas.inDrag.state) {
-            // let deltaX = left - canvas.inDrag.left;
-            // let deltaY = top - canvas.inDrag.top;
-            // canvas.canvas.style.left = deltaX + "px";
-            // canvas.canvas.style.top = deltaY + "px";
             if (event.target.style.cursor != "grab") {
+
                 event.target.style.cursor = "grab";
             }
         } else {

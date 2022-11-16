@@ -66,7 +66,6 @@ class Canvas {
             let shiftX = event.clientX - self.canvas.getBoundingClientRect().left;
             let shiftY = event.clientY - self.canvas.getBoundingClientRect().top;
             self.inDrag = { state: true, left: shiftX, top: shiftY }
-            console.log(self.inDrag)
             self.canvas.style.position = 'absolute';
 
             moveAt(event.pageX, event.pageY);
@@ -89,7 +88,6 @@ class Canvas {
                 let shiftYAfter = e.clientY;
                 let deltaX = shiftXAfter - self.inDrag.left;
                 let deltaY = shiftYAfter - self.inDrag.top;
-                console.log(deltaX, deltaY)
                 if (deltaX && deltaY) {
                     data.deltaPosition.left += deltaX
                     data.deltaPosition.top += deltaY

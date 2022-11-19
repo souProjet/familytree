@@ -163,6 +163,7 @@ class Canvas {
                 for (let i = 0; i < children.length; i++) {
                     let actualChild = familytree.find(child => child.id == children[i]);
                     self.setMember(actualChild);
+
                     if (actualChild.with) {
                         self.setMember(familytree.find(partner => partner.id == actualChild.with), true);
                         if (actualChild.children.length) {
@@ -424,6 +425,7 @@ class Canvas {
         let parents = [memberID];
         if (data.family.find(partner => partner.id == memberID).with) { parents.push(data.family.find(partner => partner.id == memberID).with) }
         let newMemberReturn = await data.createMember(parents);
+
         if (newMemberReturn) {
             this.toogleContextMenu(false);
             this.build(data.family)

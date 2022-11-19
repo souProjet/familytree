@@ -54,14 +54,15 @@ class Data {
                 }
             }
         }
-
         let gender = inCoupleWith ? (this.family.find(p => p.id == inCoupleWith).gender == 'male' ? 'female' : 'male') : Math.floor(Math.random() * 2) ? 'male' : 'female';
 
         let name = (await fetch(`https://randomuser.me/api/?gender=${gender}&nat=fr&inc=name`).then(res => res.json())).results[0].name.first;
 
-        let nationality = (await fetch(`https://api.nationalize.io?name=${name}`).then(res => res.json())).country[0].country_id;
+        //let nationality = (await fetch(`https://api.nationalize.io?name=${name}`).then(res => res.json())).country[0].country_id;
+        let nationality = "FR";
 
-        let age = inCoupleWith ? (this.family.find(p => p.id == inCoupleWith).age + Math.floor(Math.random() * 20) + (-10)) : (await fetch(`https://api.agify.io?name=${name}&country_id=${nationality}`).then(res => res.json())).age || Math.floor(Math.random() * 70 - 10) + 10;
+        //let age = inCoupleWith ? (this.family.find(p => p.id == inCoupleWith).age + Math.floor(Math.random() * 20) + (-10)) : (await fetch(`https://api.agify.io?name=${name}&country_id=${nationality}`).then(res => res.json())).age || Math.floor(Math.random() * 70 - 10) + 10;
+        let age = inCoupleWith ? (this.family.find(p => p.id == inCoupleWith).age + Math.floor(Math.random() * 20) + (-10)) : Math.floor(Math.random() * 100);
 
         let birthday = new Date(Math.random() * (new Date('01-01-' + ((new Date()).getUTCFullYear() - age)).getTime() - new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()) + new Date('12-31-' + ((new Date()).getUTCFullYear() - age)).getTime()).toLocaleDateString();
 

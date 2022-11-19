@@ -11,6 +11,8 @@ class Canvas {
         this.contextMenu = document.querySelector('.context-menu');
         this.inDrag = { state: false, left: null, top: null }
         this.profileCard = document.querySelector('.profile');
+        document.addEventListener('mousemove', this.mouseMove);
+
         let self = this;
         this.profileCard.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -77,6 +79,8 @@ class Canvas {
             }
 
             function onMouseMove(event) {
+                self.mouseMove(event);
+
                 moveAt(event.pageX, event.pageY);
             }
 
@@ -178,23 +182,24 @@ class Canvas {
 
         let left = event.offsetX;
         let top = event.offsetY;
-        if (canvas.inDrag.state) {
-            if (event.target.style.cursor != "grab") {
 
-                event.target.style.cursor = "grab";
+        if (canvas.inDrag.state) {
+            if (canvas.canvas.style.cursor != "grab") {
+
+                canvas.canvas.style.cursor = "grab";
             }
         } else {
-            event.target.style.cursor = "default";
+            canvas.canvas.style.cursor = "default";
 
             let cursorState = false;
             data.family.forEach(member => {
                 if (left >= (member.left + data.deltaPosition.left) && left <= (member.left + data.deltaPosition.left) + member.height && top >= (member.top + data.deltaPosition.top) && top <= (member.top + data.deltaPosition.top) + member.height) {
-                    event.target.style.cursor = "pointer";
+                    canvas.canvas.style.cursor = "pointer";
                     cursorState = true
                 }
             });
-            if (event.target.style.cursor == "pointer" && !cursorState) {
-                event.target.style.cursor = "default";
+            if (canvas.canvas.style.cursor == "pointer" && !cursorState) {
+                canvas.canvas.style.cursor = "default";
             }
         }
     }
@@ -231,20 +236,21 @@ class Canvas {
             canvas.toogleContextMenu(false);
         }
     }
-    roundedImage(x, y, width, height, radius) {
-        let ctx = this.ctx;
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-    }
+
+    // roundedImage(x, y, width, height, radius) {
+    //     let ctx = this.ctx;
+    //     ctx.beginPath();
+    //     ctx.moveTo(x + radius, y);
+    //     ctx.lineTo(x + width - radius, y);
+    //     ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    //     ctx.lineTo(x + width, y + height - radius);
+    //     ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    //     ctx.lineTo(x + radius, y + height);
+    //     ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    //     ctx.lineTo(x, y + radius);
+    //     ctx.quadraticCurveTo(x, y, x + radius, y);
+    //     ctx.closePath();
+    // }
     setMember(member, isPartner = false) {
         let ctx = this.ctx
         let left = member.left + data.deltaPosition.left;
@@ -258,24 +264,21 @@ class Canvas {
         ctx.fillStyle = 'white';
         ctx.arc(left + rayon, top + rayon, member.height / 2, 0, 2 * Math.PI);
         ctx.fill();
-
-
-
         //photo
 
         let picture = new Image();
-        picture.src = member.picture ? ('./api/picture/' + data.token + '_' + member.picture) : (`./public/images/${member.gender}Default.png`);
+        picture.src = `./public/images/${member.gender}Default.png`;
 
         picture.onload = () => {
-            if (member.picture) {
-                ctx.save();
-                canvas.roundedImage(left, top, member.height, member.height - (borderWeight / 2), (member.height / 2) + (borderWeight * 2));
-                ctx.clip();
-                ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2));
-                ctx.restore();
-            } else {
-                ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2));
-            }
+            // if (member.picture) {
+            //     ctx.save();
+            //     canvas.roundedImage(left, top, member.height, member.height - (borderWeight / 2), (member.height / 2) + (borderWeight * 2));
+            //     ctx.clip();
+            //     ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2));
+            //     ctx.restore();
+            // } else {
+            ctx.drawImage(picture, left, top, member.height, member.height - (borderWeight / 2));
+            //}
             //bordure du cercle
             ctx.lineWidth = borderWeight;
             ctx.strokeStyle = "#bde582";
@@ -330,6 +333,7 @@ class Canvas {
             }
 
         }
+
     }
     setLink(left, top, width, height, isCurve = false, cp1x, cp1y, cp2x, cp2y, x, y, weight) {
         let ctx = this.ctx;

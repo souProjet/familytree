@@ -87,9 +87,9 @@ class Data {
             "left": 0
         }
         this.family.push(newMember);
+        this.save('add', null, newMember, parentsID);
 
         this.adjustPositioning();
-        this.save('add', null, newMember, parentsID);
 
         return newMember;
     }
@@ -110,48 +110,66 @@ class Data {
 
         this.save('del', id);
     }
-    async adjustPositioning() {
+    adjustPositioning() {
         let maxDepth = 0;
         this.family.forEach(member => member.depth > maxDepth ? maxDepth++ : null);
+
+        let newFamilyTree = [...this.family]
         let repositioningElements = [];
         for (let i = 0; i <= maxDepth; i++) {
-            let actualDepthData = this.family.filter(member => member.depth == i);
-            let actualDepthDataWithoutCouple;
-            if (i) {
-                actualDepthDataWithoutCouple = actualDepthData.filter(member => this.family.find(parent => parent.children.indexOf(member.id) != -1))
-            } else {
-                actualDepthDataWithoutCouple = [actualDepthData[0]]
-            }
-            actualDepthDataWithoutCouple.sort((a, b) => (this.family.find(member => member.children.indexOf(a.id) != -1).left - this.family.find(member => member.children.indexOf(b.id) != -1).left))
-            let left = 0;
-            let newFamilyTree = [...this.family]
-            for (let n = 0; n < actualDepthData.length; n++) {
-                let top = actualDepthData[n].depth ? (actualDepthData[n].height * actualDepthData[n].depth + 100 * actualDepthData[n].depth) : 0;
-                newFamilyTree.find(member => member.id == actualDepthData[n].id).top = top
-            }
-            for (let n = 0; n < actualDepthDataWithoutCouple.length; n++) {
-                left += i ? (n ? 300 : 0) : (canvas.width / 2) - (actualDepthDataWithoutCouple[n].height + (newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with) ? newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left : 0 - (actualDepthDataWithoutCouple[n].left + actualDepthDataWithoutCouple[n].height)) / 2)
-                newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].id).left = left
-
-                repositioningElements.push({
-                    id: actualDepthDataWithoutCouple[n].id,
-                    value: left
-                })
-                if (actualDepthDataWithoutCouple[n].with) {
-                    left += 300;
-                    newFamilyTree.find(member => member.id == actualDepthDataWithoutCouple[n].with).left = left
+            if (i == 0) {
+                let base = this.family.filter(member => member.depth == 0);
+                for (let n = 0; n < base.length; n++) {
+                    let left = (window.innerWidth / 2 - base[n].height / 2) - ((n ? -1 : 1) * (base[n].height + 100));
+                    newFamilyTree.find(member => member.id == base[n].id).left = left;
                     repositioningElements.push({
-                        id: actualDepthDataWithoutCouple[n].with,
+                        id: base[n].id,
                         value: left
                     })
                 }
-            }
-            this.family = newFamilyTree
-        }
+            } else {
 
-        canvas.build(this.family)
+                let children = this.family.filter(member => member.depth == i);
+                let left = 0;
+                for (let n = 0; n < children.length; n++) {
+                    let top = children[n].depth ? (children[n].height * children[n].depth + 100 * children[n].depth) : 0;
+                    newFamilyTree.find(member => member.id == children[n].id).top = top
+                }
+                let childrenWithoutCouple = this.family.filter(member => member.depth == i).filter(member => this.family.find(parent => parent.children.indexOf(member.id) != -1));
+                childrenWithoutCouple.sort((a, b) => (this.family.find(member => member.children.indexOf(a.id) != -1).left - this.family.find(member => member.children.indexOf(b.id) != -1).left))
+                let middle = Math.ceil(children.length / 2) - 1;
+                let counter = 0;
+                for (let n = 0; n < childrenWithoutCouple.length; n++) {
+                    // let parents = this.family.filter(parent => parent.children.indexOf(childrenWithoutCouple[n].id) != -1);
+                    // let haveTwoParents = parents.length == 2 ? true : false
+                    // let firstParent = haveTwoParents ? ((parents[0].left) < (parents[1].left) ? parents[0] : parents[1]) : parents[0]
+                    // let secondeParent = haveTwoParents ? ((parents[0].left + data.deltaPosition.left) > (parents[1].left + data.deltaPosition.left) ? parents[0] : parents[1]) : undefined;
+                    //let relativeCenter = haveTwoParents ? ((firstParent.left) + firstParent.height + ((secondeParent.left) - ((firstParent.left) + firstParent.height)) / 2) : ((firstParent.left) + parents[0].height / 2)
+                    let relativeCenter = window.innerWidth / 2;
+                    left = (relativeCenter - childrenWithoutCouple[n].height / 2) - (children.length % 2 ? 0 : 150) + (counter >= middle ? 1 : -1) * Math.abs(((counter - middle) * 300))
+
+                    newFamilyTree.find(member => member.id == childrenWithoutCouple[n].id).left = left
+
+                    repositioningElements.push({
+                        id: childrenWithoutCouple[n].id,
+                        value: left
+                    })
+                    counter++;
+
+                    if (childrenWithoutCouple[n].with) {
+                        left = (relativeCenter - childrenWithoutCouple[n].height / 2) - (children.length % 2 ? 0 : 150) + (counter >= middle ? 1 : -1) * Math.abs(((counter - middle) * 300))
+                        newFamilyTree.find(member => member.id == childrenWithoutCouple[n].with).left = left
+                        repositioningElements.push({
+                            id: childrenWithoutCouple[n].with,
+                            value: left
+                        })
+                        counter++;
+                    }
+                }
+            }
+        }
+        this.family = newFamilyTree;
         this.save('positioning', null, repositioningElements)
-        return true
 
     }
     escapeHTML = (str) => { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;"); }
